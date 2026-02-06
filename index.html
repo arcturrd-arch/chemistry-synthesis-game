@@ -25,7 +25,6 @@
             user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
-        /* Анімація для повідомлення про перевантаження */
         @keyframes pulse-red {
             0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
             50% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
@@ -51,7 +50,7 @@
         } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { 
             Atom, FlaskConical, Users, Copy, Check, AlertTriangle, 
-            ArrowRightLeft, Play, RotateCcw, Crown, LogOut, Loader2, X, RefreshCcw, LayoutGrid, Menu, History, Trash2
+            ArrowRightLeft, Play, RotateCcw, Crown, LogOut, Loader2, X, RefreshCcw, LayoutGrid, Menu, History, Trash2, Medal
         } from 'https://esm.sh/lucide-react@0.263.1';
 
         // ==========================================
@@ -77,7 +76,7 @@
 
         const appId = 'synthesis-game';
 
-        // --- ДАНІ ГРИ (ВАШІ НАЛАШТУВАННЯ) ---
+        // --- ДАНІ ГРИ ---
 
         const ELEMENT_DISTRIBUTION = {
             'H': 24, 'O': 34, 'C': 12, 'Na': 10, 'Cl': 7, 'Ca': 8, 'N': 7, 'S': 6, 'Si': 4
@@ -249,7 +248,7 @@
             );
         };
 
-        const ElementSelectorModal = ({ isOpen, onClose, onSelect, title }) => {
+        const ElementSelectorModal = ({ isOpen, onClose, onSelect, title, extraControls = null }) => {
             if (!isOpen) return null;
             return (
                 <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
@@ -258,7 +257,8 @@
                         <h3 className="text-lg sm:text-xl font-bold text-gray-800">{title}</h3>
                         <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full bg-gray-50"><X size={20}/></button>
                         </div>
-                        <div className="grid grid-cols-4 gap-2 sm:gap-3 max-h-[60vh] overflow-y-auto p-1">
+                        {extraControls}
+                        <div className="grid grid-cols-4 gap-2 sm:gap-3 max-h-[50vh] overflow-y-auto p-1">
                         {Object.keys(ELEMENTS).map(el => (
                             <div key={el} onClick={() => onSelect(el)} className="cursor-pointer hover:scale-105 transition-transform flex justify-center">
                             <ElementCard type={el} mini />
@@ -286,7 +286,8 @@
             const [is3to1ModalOpen, set3to1ModalOpen] = useState(false);
             const [tradeMode, setTradeMode] = useState(false);
             const [tradeStep, setTradeStep] = useState(0); 
-            const [tradeOffer, setTradeOffer] = useState({ giveIdx: null, wantEl: null, targetUid: null });
+            // Updated tradeOffer structure
+            const [tradeOffer, setTradeOffer] = useState({ giveIdxs: [], wantEl: null, wantCount: 1, targetUid: null });
 
             // Auth
             useEffect(() => {
@@ -309,7 +310,18 @@
                 const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId);
                 const unsubscribe = onSnapshot(gameRef, (snap) => {
                     if (snap.exists()) {
-                        setGameData(snap.data());
+                        const data = snap.data();
+                        setGameData(data);
+                        
+                        // Check for trade rejection notifications
+                        const lastLog = data.logs[data.logs.length - 1];
+                        if (lastLog && lastLog.text.includes("відхилив обмін від") && lastLog.text.includes(user.uid)) {
+                             // This is a bit of a hacky way to notify using logs, but it works for simple apps
+                             // Improved: use a temporary local check against time
+                             if (Date.now() - lastLog.time < 5000) {
+                                 setNotification({ type: 'error', msg: "Вашу пропозицію обміну відхилено!" });
+                             }
+                        }
                     } else {
                         setNotification({ type: 'error', msg: 'Кімнату не знайдено' });
                         setGameId('');
@@ -325,7 +337,6 @@
             const isMyTurn = gameData?.status === 'playing' && gameData?.turnIndex === myIndex;
             const isHost = gameData?.players[0].uid === user?.uid;
             
-            // Check if user needs to discard
             const isDiscardPhase = gameData?.turnPhase === 'discard_force' && isMyTurn;
             const cardsToDiscard = isDiscardPhase ? Math.floor(myPlayer.hand.length / 2) : 0;
 
@@ -363,7 +374,7 @@
                     elementDeck: generateElementDeck(),
                     moleculeDeck: molDeck,
                     market: initialMarket,
-                    discardPile: [], // Not really used anymore for recycling, but kept for structure
+                    discardPile: [], 
                     turnIndex: 0,
                     logs: [{ text: `Гру створено гравцем ${playerName}`, time: Date.now() }],
                     turnPhase: 'draw', 
@@ -420,7 +431,7 @@
                 
                 if (newDeck.length < count) {
                     setNotification({ type: 'error', msg: 'Колода елементів закінчилась!' });
-                    if (newDeck.length === 0) return; // Stop if absolutely empty
+                    if (newDeck.length === 0) return; 
                 }
 
                 const drawn = newDeck.splice(0, Math.min(count, newDeck.length));
@@ -428,13 +439,12 @@
                 const newHand = [...myPlayer.hand, ...drawn];
                 updatedPlayers[myIndex].hand = newHand;
 
-                // Check for hand limit
                 let nextPhase = 'action';
-                let logMsg = `${myPlayer.name} взяв карти`;
+                let logMsg = `${myPlayer.name} взяв карти`; // Generic log
                 
                 if (newHand.length > 10) {
                     nextPhase = 'discard_force';
-                    logMsg += `. Перевантаження! Потрібно скинути карти.`;
+                    logMsg += `. Перевантаження!`;
                 }
 
                 await updateDoc(gameRef, {
@@ -452,7 +462,6 @@
                 }
                 const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId);
                 let newHand = [...myPlayer.hand];
-                // Remove selected
                 selectedCards.sort((a,b) => b-a).forEach(idx => { newHand.splice(idx, 1); });
                 
                 const updatedPlayers = [...gameData.players];
@@ -460,7 +469,7 @@
 
                 await updateDoc(gameRef, {
                     players: updatedPlayers,
-                    turnPhase: 'action', // Return to action phase
+                    turnPhase: 'action', 
                     logs: arrayUnion({ text: `${myPlayer.name} скинув зайві карти`, time: Date.now() })
                 });
                 setSelectedCards([]);
@@ -479,7 +488,6 @@
                 if (!checkRecipe(player.hand, molecule.req)) return;
 
                 let newHand = [...player.hand];
-                // Remove used atoms - NO RECYCLING TO DISCARD PILE
                 Object.entries(molecule.req).forEach(([el, count]) => {
                     for(let i=0; i<count; i++) {
                         const idx = newHand.indexOf(el);
@@ -502,7 +510,6 @@
                 
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId), {
                     players: updatedPlayers, 
-                    // No change to discardPile, atoms are gone
                     status,
                     market: newMarket,
                     moleculeDeck: newMoleculeDeck,
@@ -510,7 +517,6 @@
                 });
             };
 
-            // ... Trade logic remains same mostly, but we should clear selection if force discard happens ...
             const startTrade3to1 = () => {
                 if (selectedCards.length !== 3) {
                     setNotification({ type: 'error', msg: 'Виберіть рівно 3 карти' }); return;
@@ -535,7 +541,6 @@
 
                 await updateDoc(gameRef, {
                     players: updatedPlayers,
-                    // 3 cards gone, do not add to discardPile (no recycling per request)
                     logs: arrayUnion({ text: `${myPlayer.name} обміняв 3:1 на ${wantedElement}`, time: Date.now() })
                 });
                 setSelectedCards([]);
@@ -543,33 +548,55 @@
             };
 
             const initPlayerTrade = () => {
-                if (selectedCards.length !== 1) {
-                    setNotification({ type: 'error', msg: 'Виберіть 1 карту, яку хочете віддати' });
+                // Allow 1 to 3 cards for trade
+                if (selectedCards.length < 1 || selectedCards.length > 3) {
+                    setNotification({ type: 'error', msg: 'Оберіть від 1 до 3 карт для обміну' });
                     return;
                 }
-                setTradeOffer({ giveIdx: selectedCards[0], wantEl: null, targetUid: null });
+                setTradeOffer({ giveIdxs: selectedCards, wantEl: null, wantCount: 1, targetUid: null });
                 setTradeMode(true);
                 setTradeStep(1); 
             };
 
             const handleTradeStepSelection = (val) => {
+                // val is Element Type
                 if (tradeStep === 1) { 
                     setTradeOffer(prev => ({ ...prev, wantEl: val }));
+                    // Next step could be selecting Quantity if we want complex logic, 
+                    // but we can integrate it into the modal or assume default. 
+                    // Let's add simple logic here or UI. For now, defaulting to 1, will handle in UI.
                     setTradeStep(2); 
                 }
             };
 
             const sendTradeOffer = async (targetUid) => {
-                if (!tradeOffer.wantEl || tradeOffer.giveIdx === null) return;
-                const cardToGive = myPlayer.hand[tradeOffer.giveIdx];
-                const targetName = gameData.players.find(p => p.uid === targetUid).name;
+                if (!tradeOffer.wantEl || tradeOffer.giveIdxs.length === 0) return;
+                
+                // VALIDATION: Check if target has enough cards
+                const targetPlayer = gameData.players.find(p => p.uid === targetUid);
+                const countInTargetHand = targetPlayer.hand.filter(c => c === tradeOffer.wantEl).length;
+
+                if (countInTargetHand < tradeOffer.wantCount) {
+                    setNotification({ type: 'error', msg: `У гравця ${targetPlayer.name} немає ${tradeOffer.wantCount} шт. ${tradeOffer.wantEl}!` });
+                    return;
+                }
+
+                const cardsToGive = tradeOffer.giveIdxs.map(idx => myPlayer.hand[idx]);
+                
                 const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId);
                 await updateDoc(gameRef, {
                     activeTrade: {
-                        fromUid: user.uid, fromName: myPlayer.name, targetUid: targetUid, targetName: targetName,
-                        giveCard: cardToGive, giveCardIdx: tradeOffer.giveIdx, wantCard: tradeOffer.wantEl, status: 'pending'
+                        fromUid: user.uid, 
+                        fromName: myPlayer.name, 
+                        targetUid: targetUid, 
+                        targetName: targetPlayer.name,
+                        giveCards: cardsToGive, // Array of types
+                        giveIdxs: tradeOffer.giveIdxs,
+                        wantCard: tradeOffer.wantEl, 
+                        wantCount: tradeOffer.wantCount,
+                        status: 'pending'
                     },
-                    logs: arrayUnion({ text: `${myPlayer.name} пропонує обмін ${targetName}`, time: Date.now() })
+                    logs: arrayUnion({ text: `${myPlayer.name} пропонує обмін ${targetPlayer.name}`, time: Date.now() })
                 });
                 setTradeMode(false); setTradeStep(0); setSelectedCards([]);
                 setNotification({ type: 'success', msg: 'Пропозицію відправлено!' });
@@ -579,36 +606,64 @@
                 if (!gameData.activeTrade) return;
                 const trade = gameData.activeTrade;
                 const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId);
+                
                 if (!accepted) {
-                    await updateDoc(gameRef, { activeTrade: null, logs: arrayUnion({ text: `Обмін скасовано`, time: Date.now() }) });
+                    await updateDoc(gameRef, { 
+                        activeTrade: null, 
+                        // Generic log, but specific rejection hint for sender
+                        logs: arrayUnion({ text: `${myPlayer.name} відхилив обмін від ${trade.fromUid}`, time: Date.now() }) 
+                    });
                     return;
                 }
+
+                // Double check hand just in case
                 const myHand = myPlayer.hand;
-                const cardIdx = myHand.indexOf(trade.wantCard);
-                if (cardIdx === -1) {
-                    setNotification({ type: 'error', msg: `У вас немає карти ${trade.wantCard}!` });
+                const myCount = myHand.filter(c => c === trade.wantCard).length;
+
+                if (myCount < trade.wantCount) {
+                    setNotification({ type: 'error', msg: `Недостатньо карт ${trade.wantCard}!` });
                     await updateDoc(gameRef, { activeTrade: null });
                     return;
                 }
+
                 try {
                     await runTransaction(db, async (transaction) => {
                         const sfDoc = await transaction.get(gameRef);
                         const gd = sfDoc.data();
                         if (!gd.activeTrade || gd.activeTrade.status !== 'pending') throw "Обмін вже неактуальний";
+                        
                         const sender = gd.players.find(p => p.uid === trade.fromUid);
                         const receiver = gd.players[myIndex];
                         
-                        const senderCardIdx = sender.hand.indexOf(trade.giveCard);
-                        if (senderCardIdx === -1) throw "У відправника зникла карта";
-                        sender.hand.splice(senderCardIdx, 1); sender.hand.push(trade.wantCard);
+                        // Move cards from Sender to Receiver
+                        // Note: indices might have shifted if sender played cards, so we remove by Type
+                        // Ideally we use indices but async nature makes it risky. Let's remove by type (First match)
+                        
+                        // Remove from Sender
+                        for (let cardType of trade.giveCards) {
+                            const idx = sender.hand.indexOf(cardType);
+                            if (idx === -1) throw "У відправника змінились карти";
+                            sender.hand.splice(idx, 1);
+                        }
+                        // Add to Receiver
+                        receiver.hand.push(...trade.giveCards);
 
-                        const receiverCardIdx = receiver.hand.indexOf(trade.wantCard);
-                        if (receiverCardIdx === -1) throw "У вас зникла карта";
-                        receiver.hand.splice(receiverCardIdx, 1); receiver.hand.push(trade.giveCard);
+                        // Remove from Receiver (wantCard * wantCount)
+                        for (let i = 0; i < trade.wantCount; i++) {
+                            const idx = receiver.hand.indexOf(trade.wantCard);
+                            if (idx === -1) throw "У вас змінились карти";
+                            receiver.hand.splice(idx, 1);
+                        }
+                        // Add to Sender
+                        for (let i = 0; i < trade.wantCount; i++) {
+                            sender.hand.push(trade.wantCard);
+                        }
 
                         transaction.update(gameRef, {
-                        players: gd.players, activeTrade: null,
-                        logs: arrayUnion({ text: `Обмін успішний: ${trade.giveCard} ↔ ${trade.wantCard}`, time: Date.now() })
+                            players: gd.players, 
+                            activeTrade: null,
+                            // Generic log hiding secret details
+                            logs: arrayUnion({ text: `Обмін між ${sender.name} та ${receiver.name} завершено`, time: Date.now() })
                         });
                     });
                 } catch(e) {
@@ -628,12 +683,9 @@
                 if (selectedCards.includes(originalIdx)) {
                     setSelectedCards(selectedCards.filter(i => i !== originalIdx));
                 } else {
-                    const limit = isDiscardPhase ? cardsToDiscard : 99;
+                    const limit = isDiscardPhase ? cardsToDiscard : (tradeMode ? 3 : 99);
                     if (selectedCards.length < limit) {
                         setSelectedCards([...selectedCards, originalIdx]);
-                    } else {
-                        // Replace last selection if trying to add more than limit in discard phase? 
-                        // Or just block. Better block/ignore.
                     }
                 }
             };
@@ -706,12 +758,29 @@
             }
 
             if (gameData.status === 'finished') {
-                const winner = gameData.players.reduce((p, c) => (p.score > c.score) ? p : c);
+                const sortedPlayers = [...gameData.players].sort((a,b) => b.score - a.score);
+                const winner = sortedPlayers[0];
                 return (
-                    <div className="h-screen bg-gray-900 flex flex-col items-center justify-center text-white p-4 text-center">
+                    <div className="h-screen bg-gray-900 flex flex-col items-center justify-center text-white p-4 text-center overflow-auto">
                         <Crown size={64} className="text-yellow-400 mb-6 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]"/>
-                        <h1 className="text-4xl sm:text-6xl font-black mb-4 font-serif">{winner.name}</h1>
-                        <p className="text-lg sm:text-2xl text-gray-300 mb-8">Великий Майстер Синтезу ({winner.score} VP)</p>
+                        <h1 className="text-3xl sm:text-5xl font-black mb-2 font-serif">{winner.name}</h1>
+                        <p className="text-lg text-gray-300 mb-8">Великий Майстер Синтезу</p>
+                        
+                        <div className="bg-white/10 rounded-2xl p-4 w-full max-w-md backdrop-blur-sm border border-white/20 mb-8">
+                            <h3 className="text-xs uppercase tracking-widest text-gray-400 mb-4 font-bold">Турнірна Таблиця</h3>
+                            {sortedPlayers.map((p, i) => (
+                                <div key={i} className="flex items-center justify-between p-3 border-b border-white/10 last:border-0">
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${i===0 ? 'bg-yellow-500 text-black' : (i===1 ? 'bg-gray-400 text-black' : (i===2 ? 'bg-amber-700 text-white' : 'bg-gray-700 text-gray-400'))}`}>
+                                            {i+1}
+                                        </div>
+                                        <span className="font-bold">{p.name}</span>
+                                    </div>
+                                    <div className="font-mono font-bold text-yellow-400">{p.score} VP</div>
+                                </div>
+                            ))}
+                        </div>
+
                         <button onClick={()=>window.location.reload()} className="px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200">До Головного Меню</button>
                     </div>
                 );
@@ -735,7 +804,7 @@
                             </div>
                         </div>
 
-                        {/* MOBILE PLAYER LIST (VISIBLE) */}
+                        {/* MOBILE PLAYER LIST */}
                         <div className="lg:hidden w-full overflow-x-auto scrollbar-hide flex gap-2 pb-1">
                              {gameData.players.map((p, idx) => (
                                 <div key={p.uid} className={`flex-shrink-0 flex items-center gap-2 p-1.5 rounded-lg border text-[10px] sm:text-xs ${gameData.turnIndex === idx ? 'bg-green-50 border-green-300 ring-1 ring-green-300' : 'bg-gray-50 border-gray-200'}`}>
@@ -749,8 +818,49 @@
                     </header>
 
                     {/* MAIN AREA */}
-                    <main className="flex-grow flex overflow-hidden relative">
+                    <main className="flex-grow flex flex-col overflow-hidden relative">
                         
+                        {/* Market Area (Flex Grow to take space) */}
+                        <section className="flex-1 bg-[#dcdcdc] p-2 sm:p-4 overflow-y-auto relative min-h-0">
+                            <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-5 bg-[radial-gradient(#006400_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                            
+                            <div className="max-w-5xl mx-auto">
+                                <div className="flex items-center gap-2 mb-4 sm:mb-6 opacity-70 px-2 sticky top-0 bg-[#dcdcdc] z-10 py-2">
+                                    <LayoutGrid size={18} />
+                                    <span className="font-bold text-xs sm:text-sm uppercase tracking-widest">Арена Молекул ({gameData.market.length})</span>
+                                </div>
+                                
+                                <div className="flex flex-wrap justify-center gap-2 sm:gap-6 pb-4">
+                                    {gameData.market.map(mol => (
+                                        <MoleculeCard 
+                                            key={mol.uniqueId} 
+                                            mol={mol} 
+                                            canBuy={isMyTurn && gameData.turnPhase === 'action' && checkRecipe(myPlayer.hand, mol.req)} 
+                                            onBuy={synthesize} 
+                                        />
+                                    ))}
+                                    {[...Array(4 - gameData.market.length)].map((_, i) => (
+                                        <div key={`placeholder-${i}`} className="w-[45%] sm:w-36 h-[160px] sm:h-[180px] rounded-xl border-2 border-dashed border-gray-400 flex items-center justify-center opacity-30">
+                                            <FlaskConical size={32}/>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* MOBILE LOG (Chronicle) - Between Market and Hand */}
+                        <div className="lg:hidden h-32 bg-gray-50 border-t border-b border-gray-200 overflow-y-auto p-2">
+                            <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 sticky top-0 bg-gray-50">Хроніка подій</h4>
+                            <div className="space-y-1">
+                                {gameData.logs.slice(-10).reverse().map((l,i)=>(
+                                    <div key={i} className="text-[10px] sm:text-xs font-mono text-gray-600 border-l-2 border-gray-300 pl-2">
+                                        <span className="opacity-50 mr-1">{new Date(l.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+                                        {l.text}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
                         {/* Trade Overlay (Receiver) */}
                         {gameData.activeTrade && gameData.activeTrade.targetUid === user.uid && (
                             <div className="absolute inset-0 bg-black/60 z-50 flex items-center justify-center backdrop-blur-sm p-4">
@@ -759,12 +869,16 @@
                                     <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex items-center justify-between mb-6">
                                         <div className="text-center">
                                             <div className="text-[10px] sm:text-xs text-gray-400 uppercase font-bold mb-1">{gameData.activeTrade.fromName} дає</div>
-                                            <div className="font-black text-2xl sm:text-3xl text-blue-600">{gameData.activeTrade.giveCard}</div>
+                                            <div className="font-black text-xl sm:text-2xl text-blue-600 flex flex-col items-center">
+                                                {gameData.activeTrade.giveCards.map((c, i) => <div key={i}>{c}</div>)}
+                                            </div>
                                         </div>
                                         <RefreshCcw className="text-gray-300" />
                                         <div className="text-center">
                                             <div className="text-[10px] sm:text-xs text-gray-400 uppercase font-bold mb-1">Хоче</div>
-                                            <div className="font-black text-2xl sm:text-3xl text-green-600">{gameData.activeTrade.wantCard}</div>
+                                            <div className="font-black text-2xl sm:text-3xl text-green-600">
+                                                {gameData.activeTrade.wantCount}x {gameData.activeTrade.wantCard}
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-3">
@@ -831,8 +945,8 @@
                             </div>
                         )}
 
-                        {/* Desktop Sidebar */}
-                        <aside className="w-64 bg-white border-r hidden lg:flex flex-col shadow-lg z-20">
+                        {/* Desktop Sidebar (unchanged) */}
+                        <aside className="w-64 bg-white border-r hidden lg:flex flex-col shadow-lg z-20 h-full absolute right-0 top-0 bottom-0 pointer-events-none opacity-0 lg:opacity-100 lg:relative lg:pointer-events-auto">
                             <div className="p-5 border-b bg-gray-50">
                                 <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Таблиця лідерів</h3>
                                 {gameData.players.map((p, idx) => (
@@ -857,41 +971,13 @@
                                 </div>
                             </div>
                         </aside>
-
-                        {/* Market Area */}
-                        <section className="flex-grow bg-[#dcdcdc] p-2 sm:p-4 overflow-y-auto relative">
-                            <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-5 bg-[radial-gradient(#006400_1px,transparent_1px)] [background-size:16px_16px]"></div>
-                            
-                            <div className="max-w-5xl mx-auto pb-40 sm:pb-32">
-                            <div className="flex items-center gap-2 mb-4 sm:mb-6 opacity-70 px-2">
-                                <LayoutGrid size={18} />
-                                <span className="font-bold text-xs sm:text-sm uppercase tracking-widest">Арена Молекул ({gameData.market.length})</span>
-                            </div>
-                            
-                            <div className="flex flex-wrap justify-center gap-2 sm:gap-6">
-                                {gameData.market.map(mol => (
-                                    <MoleculeCard 
-                                        key={mol.uniqueId} 
-                                        mol={mol} 
-                                        canBuy={isMyTurn && gameData.turnPhase === 'action' && checkRecipe(myPlayer.hand, mol.req)} 
-                                        onBuy={synthesize} 
-                                    />
-                                ))}
-                                {[...Array(4 - gameData.market.length)].map((_, i) => (
-                                    <div key={`placeholder-${i}`} className="w-[45%] sm:w-36 h-[160px] sm:h-[180px] rounded-xl border-2 border-dashed border-gray-400 flex items-center justify-center opacity-30">
-                                        <FlaskConical size={32}/>
-                                    </div>
-                                ))}
-                            </div>
-                            </div>
-                        </section>
                     </main>
 
                     {/* FOOTER */}
                     <footer className={`bg-white border-t p-2 z-50 relative shadow-[0_-5px_25px_rgba(0,0,0,0.1)] pb-safe transition-colors ${isDiscardPhase ? 'bg-red-50 border-red-200' : ''}`}>
                         <div className="max-w-6xl mx-auto">
                         {/* Notifications/Hints */}
-                        {tradeMode && tradeStep === 0 && <div className="text-center text-blue-600 font-bold text-xs sm:text-sm mb-2 animate-pulse bg-blue-50 py-1 rounded-full mx-auto w-max px-4">Оберіть карту для обміну</div>}
+                        {tradeMode && tradeStep === 0 && <div className="text-center text-blue-600 font-bold text-xs sm:text-sm mb-2 animate-pulse bg-blue-50 py-1 rounded-full mx-auto w-max px-4">Оберіть карти для обміну (1-3 шт)</div>}
                         {selectedCards.length > 0 && !tradeMode && !isDiscardPhase && <div className="text-center text-gray-500 text-[10px] sm:text-xs mb-2 bg-gray-100 py-0.5 rounded-full mx-auto w-max px-3">Обрано: {selectedCards.length}</div>}
 
                         {/* HAND */}
@@ -906,8 +992,8 @@
                                         selected={selectedCards.includes(originalIdx)}
                                         onClick={() => {
                                             if (tradeMode && tradeStep === 0) {
-                                                setSelectedCards([originalIdx]);
-                                                setTimeout(() => initPlayerTrade(), 150);
+                                                // Allow selecting up to 3 cards for trade
+                                                toggleSelectCard(originalIdx);
                                             } else {
                                                 toggleSelectCard(originalIdx);
                                             }
@@ -942,7 +1028,7 @@
                                         </button>
                                         
                                         <button 
-                                            onClick={() => { setSelectedCards([]); setTradeMode(true); setTradeStep(0); }} 
+                                            onClick={initPlayerTrade} 
                                             className="bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-1 sm:gap-2 hover:bg-indigo-100 transition-colors whitespace-nowrap"
                                         >
                                             <Users size={14}/> <span className="hidden sm:inline">Обмін</span> Гравці
@@ -970,7 +1056,28 @@
                     
                     {/* MODALS */}
                     <ElementSelectorModal isOpen={is3to1ModalOpen} onClose={() => set3to1ModalOpen(false)} onSelect={confirmTrade3to1} title="Отримайте ресурс" />
-                    <ElementSelectorModal isOpen={tradeMode && tradeStep === 1} onClose={() => setTradeMode(false)} onSelect={handleTradeStepSelection} title="Що ви хочете отримати?" />
+                    
+                    {/* TRADE SELECTOR MODAL - UPDATED with Quantity */}
+                    <ElementSelectorModal 
+                        isOpen={tradeMode && tradeStep === 1} 
+                        onClose={() => setTradeMode(false)} 
+                        onSelect={handleTradeStepSelection} 
+                        title={`Оберіть елемент для отримання`} 
+                        extraControls={
+                            <div className="flex justify-center gap-4 mb-4 border-b pb-4">
+                                <span className="text-sm font-bold text-gray-500 self-center">Кількість:</span>
+                                {[1, 2, 3].map(n => (
+                                    <button 
+                                        key={n}
+                                        onClick={() => setTradeOffer(prev => ({ ...prev, wantCount: n }))}
+                                        className={`w-10 h-10 rounded-full font-bold border-2 transition-all ${tradeOffer.wantCount === n ? 'bg-indigo-600 text-white border-indigo-600 scale-110' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}
+                                    >
+                                        {n}
+                                    </button>
+                                ))}
+                            </div>
+                        }
+                    />
 
                     {notification && (
                         <div className={`fixed top-16 sm:top-24 left-1/2 -translate-x-1/2 px-4 sm:px-6 py-2 sm:py-3 rounded-xl shadow-2xl text-white font-bold z-[100] animate-in slide-in-from-top-4 text-xs sm:text-sm whitespace-nowrap ${notification.type==='error'?'bg-red-500':'bg-green-600'}`}>
