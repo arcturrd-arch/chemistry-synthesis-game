@@ -2,16 +2,16 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>СИНТЕЗ - Хімічна Стратегія</title>
     
-    <!-- Підключаємо Tailwind CSS -->
+    <!-- Підключаємо Tailwind CSS для стилів -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Підключаємо Babel -->
+    <!-- Підключаємо Babel для розуміння React коду -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Стилі -->
+    <!-- Стилі для скролбару та анімацій -->
     <style>
         .scrollbar-hide::-webkit-scrollbar {
             display: none;
@@ -23,21 +23,15 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-        @keyframes pulse-red {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            50% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-        }
-        .animate-pulse-red {
-            animation: pulse-red 2s infinite;
         }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
+    <!-- Основний скрипт гри -->
     <script type="text/babel" data-type="module">
+        // --- ІМПОРТИ БІБЛІОТЕК З CDN ---
         import React, { useState, useEffect, useMemo, useRef } from 'https://esm.sh/react@18.2.0';
         import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
@@ -50,11 +44,12 @@
         } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { 
             Atom, FlaskConical, Users, Copy, Check, AlertTriangle, 
-            ArrowRightLeft, Play, RotateCcw, Crown, LogOut, Loader2, X, RefreshCcw, LayoutGrid, Menu, History, Trash2, Medal, ClipboardCopy
+            ArrowRightLeft, Play, RotateCcw, Crown, LogOut, Loader2, X, RefreshCcw, LayoutGrid, Menu, History 
         } from 'https://esm.sh/lucide-react@0.263.1';
 
         // ==========================================
-        // НАЛАШТУВАННЯ FIREBASE
+        // НАЛАШТУВАННЯ FIREBASE (ВАЖЛИВО!)
+        // Замініть цей об'єкт на конфігурацію вашого проекту з Firebase Console
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyCCMdryzKt4-sRq2snh16Ciug2V_cRcBIU",
@@ -65,18 +60,19 @@
             appId: "1:441318316675:web:361daca49c3924e94a99b6"
         };
         
+        // Ініціалізація Firebase
         let app, auth, db;
         try {
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
         } catch (e) {
-            console.error("Firebase Error", e);
+            console.error("Помилка ініціалізації Firebase. Перевірте конфігурацію.", e);
         }
 
-        const appId = 'synthesis-game';
+        const appId = 'synthesis-game'; // ID колекції в базі даних
 
-        // --- ДАНІ ГРИ ---
+        // --- КОНФІГУРАЦІЯ ГРИ ТА ДАНІ ---
 
         const ELEMENT_DISTRIBUTION = {
             'H': 24, 'O': 34, 'C': 12, 'Na': 10, 'Cl': 7, 'Ca': 8, 'N': 7, 'S': 6, 'Si': 4
@@ -155,14 +151,6 @@
             return true;
         };
 
-        const getAtomsList = (req) => {
-            let list = [];
-            Object.entries(req).forEach(([el, count]) => {
-                for(let i=0; i<count; i++) list.push(el);
-            });
-            return list;
-        };
-
         // --- КОМПОНЕНТИ ---
 
         const ElementCard = ({ type, count, mini = false, onClick, selected = false, style, overlap = false }) => {
@@ -194,16 +182,19 @@
                         cursor-pointer bg-gradient-to-br from-white/60 to-transparent
                     `}
                 >
+                    {/* Верх: Символ зліва, Маса справа */}
                     <div className="flex justify-between items-start font-bold leading-none">
                         <span className="text-base sm:text-lg">{type}</span>
                         <span className="text-[10px] sm:text-xs opacity-60 pt-1">{data.m}</span>
                     </div>
 
+                    {/* Центр */}
                     <div className="flex flex-col items-center justify-center flex-grow">
                         <span className="text-3xl sm:text-4xl font-black font-serif opacity-90">{type}</span>
                         <span className="text-[0.5rem] sm:text-[0.6rem] uppercase tracking-wider opacity-70 mt-1 text-center leading-tight truncate w-full">{data.name}</span>
                     </div>
 
+                    {/* Низ: Символ зліва, Маса справа (обернуті) */}
                     <div className="flex justify-between items-end font-bold leading-none rotate-180">
                         <span className="text-base sm:text-lg">{type}</span>
                         <span className="text-[10px] sm:text-xs opacity-60 pb-1">{data.m}</span>
@@ -226,19 +217,17 @@
                         <div className="text-xl sm:text-2xl font-bold text-gray-800 font-serif leading-tight">{mol.f}</div>
                         <div className="text-[0.6rem] sm:text-[0.7rem] uppercase text-gray-600 mt-1 font-bold line-clamp-2 min-h-[1.5em]">{mol.name}</div>
                     </div>
-                    
-                    {/* Визуалізація атомів кружечками */}
                     <div className="p-2 flex flex-wrap justify-center gap-1 bg-gradient-to-b from-transparent to-[#fceeb5]/30 flex-grow content-center">
-                        {getAtomsList(mol.req).map((el, i) => (
-                            <div key={i} className={`
-                                w-5 h-5 sm:w-6 sm:h-6 rounded-full border border-black/20 shadow-sm flex items-center justify-center text-[0.6rem] sm:text-[0.65rem] font-bold
-                                ${ELEMENTS[el]?.color || 'bg-gray-200'}
-                            `}>
-                                {el}
-                            </div>
+                        {Object.entries(mol.req).map(([el, count]) => (
+                        <div key={el} className={`
+                            text-[0.6rem] sm:text-[0.65rem] px-1.5 sm:px-2 py-0.5 rounded-full border border-black/10 font-bold flex items-center gap-1 shadow-sm
+                            ${ELEMENTS[el]?.color || 'bg-gray-200'}
+                        `}>
+                            <span>{el}</span>
+                            {count > 1 && <span>x{count}</span>}
+                        </div>
                         ))}
                     </div>
-
                     {canBuy && (
                         <div className="absolute inset-0 bg-green-500/20 flex items-center justify-center rounded-xl opacity-0 hover:opacity-100 transition-opacity backdrop-blur-[1px]">
                             <span className="bg-green-600 text-white px-3 py-1 sm:px-4 sm:py-2 rounded-full shadow-lg font-bold text-xs sm:text-sm transform scale-105">Синтез</span>
@@ -248,7 +237,7 @@
             );
         };
 
-        const ElementSelectorModal = ({ isOpen, onClose, onSelect, title, extraControls = null }) => {
+        const ElementSelectorModal = ({ isOpen, onClose, onSelect, title }) => {
             if (!isOpen) return null;
             return (
                 <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
@@ -257,8 +246,7 @@
                         <h3 className="text-lg sm:text-xl font-bold text-gray-800">{title}</h3>
                         <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full bg-gray-50"><X size={20}/></button>
                         </div>
-                        {extraControls}
-                        <div className="grid grid-cols-4 gap-2 sm:gap-3 max-h-[50vh] overflow-y-auto p-1">
+                        <div className="grid grid-cols-4 gap-2 sm:gap-3 max-h-[60vh] overflow-y-auto p-1">
                         {Object.keys(ELEMENTS).map(el => (
                             <div key={el} onClick={() => onSelect(el)} className="cursor-pointer hover:scale-105 transition-transform flex justify-center">
                             <ElementCard type={el} mini />
@@ -270,7 +258,7 @@
             );
         };
 
-        // --- ГОЛОВНИЙ КОМПОНЕНТ ---
+        // --- ГОЛОВНИЙ КОМПОНЕНТ ДОДАТКУ ---
 
         const SynthesisGame = () => {
             const [user, setUser] = useState(null);
@@ -278,16 +266,21 @@
             const [gameData, setGameData] = useState(null);
             const [loading, setLoading] = useState(false);
             
+            // Selection States
             const [selectedCards, setSelectedCards] = useState([]);
             const [notification, setNotification] = useState(null);
-            const [playerName, setPlayerName] = useState('');
+            const [playerName, setPlayerName] = useState('Хімік');
             const [targetGameId, setTargetGameId] = useState('');
 
+            // Mobile Menu State
+            const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
+            const [mobileTab, setMobileTab] = useState('players'); // 'players' | 'logs'
+
+            // Trade States
             const [is3to1ModalOpen, set3to1ModalOpen] = useState(false);
             const [tradeMode, setTradeMode] = useState(false);
             const [tradeStep, setTradeStep] = useState(0); 
-            // Updated tradeOffer structure
-            const [tradeOffer, setTradeOffer] = useState({ giveIdxs: [], wantEl: null, wantCount: 1, targetUid: null });
+            const [tradeOffer, setTradeOffer] = useState({ giveIdx: null, wantEl: null, targetUid: null });
 
             // Auth
             useEffect(() => {
@@ -297,35 +290,27 @@
                         await signInAnonymously(auth);
                     } catch (error) {
                         console.error("Auth error:", error);
-                        setNotification({ type: 'error', msg: "Помилка автентифікації." });
+                        setNotification({ type: 'error', msg: "Помилка автентифікації. Перевірте конфіг Firebase." });
                     }
                 };
                 initAuth();
                 return onAuthStateChanged(auth, u => setUser(u));
             }, []);
 
-            // Sync
+            // Sync Data
             useEffect(() => {
                 if (!gameId || !user || !db) return;
                 const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId);
                 const unsubscribe = onSnapshot(gameRef, (snap) => {
                     if (snap.exists()) {
-                        const data = snap.data();
-                        setGameData(data);
-                        
-                        // Check for trade rejection notifications
-                        const lastLog = data.logs[data.logs.length - 1];
-                        if (lastLog && lastLog.text.includes("відхилив обмін від") && lastLog.text.includes(user.uid)) {
-                             if (Date.now() - lastLog.time < 5000) {
-                                 setNotification({ type: 'error', msg: "Вашу пропозицію обміну відхилено!" });
-                             }
-                        }
+                        setGameData(snap.data());
                     } else {
                         setNotification({ type: 'error', msg: 'Кімнату не знайдено' });
                         setGameId('');
                     }
                 }, (err) => {
                     console.error(err);
+                    setNotification({ type: 'error', msg: "Помилка доступу до бази даних" });
                 });
                 return () => unsubscribe();
             }, [gameId, user]);
@@ -334,9 +319,6 @@
             const myPlayer = myIndex !== -1 ? gameData.players[myIndex] : null;
             const isMyTurn = gameData?.status === 'playing' && gameData?.turnIndex === myIndex;
             const isHost = gameData?.players[0].uid === user?.uid;
-            
-            const isDiscardPhase = gameData?.turnPhase === 'discard_force' && isMyTurn;
-            const cardsToDiscard = isDiscardPhase ? Math.floor(myPlayer.hand.length / 2) : 0;
 
             const sortedHandMap = useMemo(() => {
                 if (!myPlayer) return [];
@@ -350,23 +332,8 @@
 
             // --- ДІЇ ---
 
-            const copyToClipboard = (text) => {
-                const textArea = document.createElement("textarea");
-                textArea.value = text;
-                document.body.appendChild(textArea);
-                textArea.select();
-                try {
-                    document.execCommand('copy');
-                    setNotification({ type: 'success', msg: 'Код скопійовано!' });
-                } catch (err) {
-                    console.error('Failed to copy', err);
-                }
-                document.body.removeChild(textArea);
-            };
-
             const createGame = async () => {
                 if (!user || !db) return;
-                if (!playerName.trim()) { setNotification({type:'error', msg:'Введіть ім\'я!'}); return; }
                 setLoading(true);
                 const newGameId = Math.random().toString(36).substring(2, 8).toUpperCase();
                 
@@ -378,7 +345,7 @@
                     status: 'waiting', 
                     players: [{
                         uid: user.uid,
-                        name: playerName,
+                        name: playerName || 'Хімік-1',
                         hand: [],
                         score: 0,
                         molecules: []
@@ -386,7 +353,7 @@
                     elementDeck: generateElementDeck(),
                     moleculeDeck: molDeck,
                     market: initialMarket,
-                    discardPile: [], 
+                    discardPile: [],
                     turnIndex: 0,
                     logs: [{ text: `Гру створено гравцем ${playerName}`, time: Date.now() }],
                     turnPhase: 'draw', 
@@ -399,7 +366,6 @@
 
             const joinGame = async (code) => {
                 if (!user || !code || !db) return;
-                if (!playerName.trim()) { setNotification({type:'error', msg:'Введіть ім\'я!'}); return; }
                 setLoading(true);
                 const codeUpper = code.toUpperCase().trim();
                 const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', codeUpper);
@@ -442,49 +408,24 @@
                 let newDeck = [...gameData.elementDeck];
                 
                 if (newDeck.length < count) {
-                    setNotification({ type: 'error', msg: 'Колода елементів закінчилась!' });
-                    if (newDeck.length === 0) return; 
+                    if (gameData.discardPile.length > 0) {
+                        newDeck.push(...shuffleArray(gameData.discardPile));
+                        await updateDoc(gameRef, { elementDeck: newDeck, discardPile: [] });
+                        return; 
+                    } else {
+                        setNotification({ type: 'error', msg: 'Колода пуста!' });
+                        return;
+                    }
                 }
 
-                const drawn = newDeck.splice(0, Math.min(count, newDeck.length));
+                const drawn = newDeck.splice(0, count);
                 const updatedPlayers = [...gameData.players];
-                const newHand = [...myPlayer.hand, ...drawn];
-                updatedPlayers[myIndex].hand = newHand;
-
-                let nextPhase = 'action';
-                let logMsg = `${myPlayer.name} взяв карти`; // Generic log
-                
-                if (newHand.length > 10) {
-                    nextPhase = 'discard_force';
-                    logMsg += `. Перевантаження!`;
-                }
+                updatedPlayers[myIndex].hand.push(...drawn);
 
                 await updateDoc(gameRef, {
-                    elementDeck: newDeck, 
-                    players: updatedPlayers, 
-                    turnPhase: nextPhase,
-                    logs: arrayUnion({ text: logMsg, time: Date.now() })
+                    elementDeck: newDeck, players: updatedPlayers, turnPhase: 'action',
+                    logs: arrayUnion({ text: `${myPlayer.name} взяв ${count} карти`, time: Date.now() })
                 });
-            };
-
-            const forceDiscardAction = async () => {
-                if (selectedCards.length !== cardsToDiscard) {
-                    setNotification({type: 'error', msg: `Оберіть рівно ${cardsToDiscard} карт`});
-                    return;
-                }
-                const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId);
-                let newHand = [...myPlayer.hand];
-                selectedCards.sort((a,b) => b-a).forEach(idx => { newHand.splice(idx, 1); });
-                
-                const updatedPlayers = [...gameData.players];
-                updatedPlayers[myIndex].hand = newHand;
-
-                await updateDoc(gameRef, {
-                    players: updatedPlayers,
-                    turnPhase: 'action', 
-                    logs: arrayUnion({ text: `${myPlayer.name} скинув зайві карти`, time: Date.now() })
-                });
-                setSelectedCards([]);
             };
 
             const synthesize = async (molecule) => {
@@ -500,10 +441,11 @@
                 if (!checkRecipe(player.hand, molecule.req)) return;
 
                 let newHand = [...player.hand];
+                const discarded = [];
                 Object.entries(molecule.req).forEach(([el, count]) => {
                     for(let i=0; i<count; i++) {
                         const idx = newHand.indexOf(el);
-                        if (idx > -1) { newHand.splice(idx, 1); }
+                        if (idx > -1) { discarded.push(newHand[idx]); newHand.splice(idx, 1); }
                     }
                 });
 
@@ -522,6 +464,7 @@
                 
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId), {
                     players: updatedPlayers, 
+                    discardPile: [...gameData.discardPile, ...discarded], 
                     status,
                     market: newMarket,
                     moleculeDeck: newMoleculeDeck,
@@ -544,6 +487,7 @@
             const confirmTrade3to1 = async (wantedElement) => {
                 const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId);
                 const hand = myPlayer.hand;
+                const firstCard = hand[selectedCards[0]];
                 let newHand = [...hand];
                 selectedCards.sort((a,b) => b-a).forEach(idx => newHand.splice(idx, 1));
                 newHand.push(wantedElement);
@@ -553,62 +497,41 @@
 
                 await updateDoc(gameRef, {
                     players: updatedPlayers,
-                    logs: arrayUnion({ text: `${myPlayer.name} обміняв 3:1 на ${wantedElement}`, time: Date.now() })
+                    discardPile: [...gameData.discardPile, firstCard, firstCard, firstCard],
+                    logs: arrayUnion({ text: `${myPlayer.name} обміняв 3 ${firstCard} на ${wantedElement}`, time: Date.now() })
                 });
                 setSelectedCards([]);
                 set3to1ModalOpen(false);
             };
 
             const initPlayerTrade = () => {
-                // Allow 1 to 3 cards for trade
-                if (selectedCards.length < 1 || selectedCards.length > 3) {
-                    setNotification({ type: 'error', msg: 'Оберіть від 1 до 3 карт для обміну' });
+                if (selectedCards.length !== 1) {
+                    setNotification({ type: 'error', msg: 'Виберіть 1 карту, яку хочете віддати' });
                     return;
                 }
-                setTradeOffer({ giveIdxs: selectedCards, wantEl: null, wantCount: 1, targetUid: null });
+                setTradeOffer({ giveIdx: selectedCards[0], wantEl: null, targetUid: null });
                 setTradeMode(true);
                 setTradeStep(1); 
             };
 
             const handleTradeStepSelection = (val) => {
-                // val is Element Type
                 if (tradeStep === 1) { 
                     setTradeOffer(prev => ({ ...prev, wantEl: val }));
-                    // Next step could be selecting Quantity if we want complex logic, 
-                    // but we can integrate it into the modal or assume default. 
-                    // Let's add simple logic here or UI. For now, defaulting to 1, will handle in UI.
                     setTradeStep(2); 
                 }
             };
 
             const sendTradeOffer = async (targetUid) => {
-                if (!tradeOffer.wantEl || tradeOffer.giveIdxs.length === 0) return;
-                
-                // VALIDATION: Check if target has enough cards
-                const targetPlayer = gameData.players.find(p => p.uid === targetUid);
-                const countInTargetHand = targetPlayer.hand.filter(c => c === tradeOffer.wantEl).length;
-
-                if (countInTargetHand < tradeOffer.wantCount) {
-                    setNotification({ type: 'error', msg: `У гравця ${targetPlayer.name} немає ${tradeOffer.wantCount} шт. ${tradeOffer.wantEl}!` });
-                    return;
-                }
-
-                const cardsToGive = tradeOffer.giveIdxs.map(idx => myPlayer.hand[idx]);
-                
+                if (!tradeOffer.wantEl || tradeOffer.giveIdx === null) return;
+                const cardToGive = myPlayer.hand[tradeOffer.giveIdx];
+                const targetName = gameData.players.find(p => p.uid === targetUid).name;
                 const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId);
                 await updateDoc(gameRef, {
                     activeTrade: {
-                        fromUid: user.uid, 
-                        fromName: myPlayer.name, 
-                        targetUid: targetUid, 
-                        targetName: targetPlayer.name,
-                        giveCards: cardsToGive, // Array of types
-                        giveIdxs: tradeOffer.giveIdxs,
-                        wantCard: tradeOffer.wantEl, 
-                        wantCount: tradeOffer.wantCount,
-                        status: 'pending'
+                        fromUid: user.uid, fromName: myPlayer.name, targetUid: targetUid, targetName: targetName,
+                        giveCard: cardToGive, giveCardIdx: tradeOffer.giveIdx, wantCard: tradeOffer.wantEl, status: 'pending'
                     },
-                    logs: arrayUnion({ text: `${myPlayer.name} пропонує обмін ${targetPlayer.name}`, time: Date.now() })
+                    logs: arrayUnion({ text: `${myPlayer.name} пропонує обмін ${targetName}`, time: Date.now() })
                 });
                 setTradeMode(false); setTradeStep(0); setSelectedCards([]);
                 setNotification({ type: 'success', msg: 'Пропозицію відправлено!' });
@@ -618,64 +541,36 @@
                 if (!gameData.activeTrade) return;
                 const trade = gameData.activeTrade;
                 const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId);
-                
                 if (!accepted) {
-                    await updateDoc(gameRef, { 
-                        activeTrade: null, 
-                        // Generic log, but specific rejection hint for sender
-                        logs: arrayUnion({ text: `${myPlayer.name} відхилив обмін від ${trade.fromName}`, time: Date.now() }) 
-                    });
+                    await updateDoc(gameRef, { activeTrade: null, logs: arrayUnion({ text: `Обмін скасовано`, time: Date.now() }) });
                     return;
                 }
-
-                // Double check hand just in case
                 const myHand = myPlayer.hand;
-                const myCount = myHand.filter(c => c === trade.wantCard).length;
-
-                if (myCount < trade.wantCount) {
-                    setNotification({ type: 'error', msg: `Недостатньо карт ${trade.wantCard}!` });
+                const cardIdx = myHand.indexOf(trade.wantCard);
+                if (cardIdx === -1) {
+                    setNotification({ type: 'error', msg: `У вас немає карти ${trade.wantCard}!` });
                     await updateDoc(gameRef, { activeTrade: null });
                     return;
                 }
-
                 try {
                     await runTransaction(db, async (transaction) => {
                         const sfDoc = await transaction.get(gameRef);
                         const gd = sfDoc.data();
                         if (!gd.activeTrade || gd.activeTrade.status !== 'pending') throw "Обмін вже неактуальний";
-                        
                         const sender = gd.players.find(p => p.uid === trade.fromUid);
                         const receiver = gd.players[myIndex];
                         
-                        // Move cards from Sender to Receiver
-                        // Note: indices might have shifted if sender played cards, so we remove by Type
-                        // Ideally we use indices but async nature makes it risky. Let's remove by type (First match)
-                        
-                        // Remove from Sender
-                        for (let cardType of trade.giveCards) {
-                            const idx = sender.hand.indexOf(cardType);
-                            if (idx === -1) throw "У відправника змінились карти";
-                            sender.hand.splice(idx, 1);
-                        }
-                        // Add to Receiver
-                        receiver.hand.push(...trade.giveCards);
+                        const senderCardIdx = sender.hand.indexOf(trade.giveCard);
+                        if (senderCardIdx === -1) throw "У відправника зникла карта";
+                        sender.hand.splice(senderCardIdx, 1); sender.hand.push(trade.wantCard);
 
-                        // Remove from Receiver (wantCard * wantCount)
-                        for (let i = 0; i < trade.wantCount; i++) {
-                            const idx = receiver.hand.indexOf(trade.wantCard);
-                            if (idx === -1) throw "У вас змінились карти";
-                            receiver.hand.splice(idx, 1);
-                        }
-                        // Add to Sender
-                        for (let i = 0; i < trade.wantCount; i++) {
-                            sender.hand.push(trade.wantCard);
-                        }
+                        const receiverCardIdx = receiver.hand.indexOf(trade.wantCard);
+                        if (receiverCardIdx === -1) throw "У вас зникла карта";
+                        receiver.hand.splice(receiverCardIdx, 1); receiver.hand.push(trade.giveCard);
 
                         transaction.update(gameRef, {
-                            players: gd.players, 
-                            activeTrade: null,
-                            // Generic log hiding secret details
-                            logs: arrayUnion({ text: `Обмін між ${sender.name} та ${receiver.name} завершено`, time: Date.now() })
+                        players: gd.players, activeTrade: null,
+                        logs: arrayUnion({ text: `Обмін успішний: ${trade.giveCard} ↔ ${trade.wantCard}`, time: Date.now() })
                         });
                     });
                 } catch(e) {
@@ -684,6 +579,9 @@
             };
 
             const endTurn = async () => {
+                if (myPlayer.hand.length > 10) {
+                    setNotification({ type: 'error', msg: 'Більше 10 карт! Скиньте зайве.' }); return;
+                }
                 const nextIndex = (gameData.turnIndex + 1) % gameData.players.length;
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId), {
                     turnIndex: nextIndex, turnPhase: 'draw', activeTrade: null,
@@ -691,14 +589,26 @@
                 });
             };
 
+            const discardSelected = async () => {
+                if (selectedCards.length === 0) return;
+                const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId);
+                let newHand = [...myPlayer.hand];
+                const discarded = [];
+                selectedCards.sort((a,b) => b-a).forEach(idx => { discarded.push(newHand[idx]); newHand.splice(idx, 1); });
+                const updatedPlayers = [...gameData.players];
+                updatedPlayers[myIndex].hand = newHand;
+                await updateDoc(gameRef, {
+                    players: updatedPlayers, discardPile: [...gameData.discardPile, ...discarded],
+                    logs: arrayUnion({ text: `${myPlayer.name} скинув ${discarded.length} карт`, time: Date.now() })
+                });
+                setSelectedCards([]);
+            };
+
             const toggleSelectCard = (originalIdx) => {
                 if (selectedCards.includes(originalIdx)) {
                     setSelectedCards(selectedCards.filter(i => i !== originalIdx));
                 } else {
-                    const limit = isDiscardPhase ? cardsToDiscard : (tradeMode ? 3 : 99);
-                    if (selectedCards.length < limit) {
-                        setSelectedCards([...selectedCards, originalIdx]);
-                    }
+                    setSelectedCards([...selectedCards, originalIdx]);
                 }
             };
 
@@ -718,7 +628,7 @@
                             <h1 className="text-3xl sm:text-4xl font-black text-[#006400] tracking-wider mb-1">СИНТЕЗ</h1>
                             <p className="text-gray-400 text-xs sm:text-sm">Хімічна стратегія</p>
                         </div>
-                        <input type="text" value={playerName} onChange={e=>setPlayerName(e.target.value)} className="w-full border-2 border-gray-200 p-3 rounded-lg focus:border-green-600 outline-none text-center font-bold" placeholder="Введіть ім'я"/>
+                        <input type="text" value={playerName} onChange={e=>setPlayerName(e.target.value)} className="w-full border-2 border-gray-200 p-3 rounded-lg focus:border-green-600 outline-none" placeholder="Ваше ім'я"/>
                         <button onClick={createGame} className="w-full bg-green-700 hover:bg-green-800 text-white p-3 rounded-lg font-bold transition-all shadow-lg flex items-center justify-center gap-2">
                             <Atom size={20}/> Створити Гру
                         </button>
@@ -728,8 +638,8 @@
                             <div className="h-px bg-gray-200 flex-grow"></div>
                         </div>
                         <div className="flex gap-2">
-                            <input type="text" value={targetGameId} onChange={e=>setTargetGameId(e.target.value)} className="flex-grow border-2 border-gray-200 p-3 rounded-lg uppercase tracking-widest font-mono text-sm text-center" placeholder="ВВЕДІТЬ КОД"/>
-                            <button onClick={()=>joinGame(targetGameId)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 rounded-lg font-bold shadow-lg text-sm sm:text-base whitespace-nowrap">Приєднатись</button>
+                            <input type="text" value={targetGameId} onChange={e=>setTargetGameId(e.target.value)} className="flex-grow border-2 border-gray-200 p-3 rounded-lg uppercase tracking-widest font-mono text-sm" placeholder="КОД"/>
+                            <button onClick={()=>joinGame(targetGameId)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 rounded-lg font-bold shadow-lg text-sm sm:text-base">Увійти</button>
                         </div>
                         {notification && <div className="bg-red-50 text-red-600 p-3 rounded text-center text-xs sm:text-sm border border-red-100">{notification.msg}</div>}
                         </div>
@@ -741,12 +651,7 @@
                 return (
                     <div className="min-h-screen bg-[#f7f7f7] flex flex-col items-center justify-center p-4">
                         <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-xl w-full max-w-lg text-center border-t-8 border-[#006400]">
-                        <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-[#006400] font-serif flex items-center justify-center gap-2">
-                            Кімната: {gameId}
-                            <button onClick={() => copyToClipboard(gameId)} className="p-1 hover:bg-gray-100 rounded text-gray-500">
-                                <ClipboardCopy size={20} />
-                            </button>
-                        </h2>
+                        <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-[#006400] font-serif">Кімната: {gameId}</h2>
                         <div className="bg-gray-50 rounded-xl p-4 mb-6">
                             <h3 className="text-xs uppercase text-gray-400 font-bold mb-3 tracking-widest">Гравці в очікуванні</h3>
                             <div className="space-y-2">
@@ -770,125 +675,110 @@
                             </button>
                         ) : <p className="text-gray-500 animate-pulse text-sm">Чекаємо організатора...</p>}
                         </div>
-                        {notification && (
-                            <div className={`fixed top-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-xl shadow-lg text-white font-bold z-[100] text-sm ${notification.type==='error'?'bg-red-500':'bg-green-600'}`}>
-                                {notification.msg}
-                                {setTimeout(()=>setNotification(null), 3000) && ""}
-                            </div>
-                        )}
                     </div>
                 );
             }
 
             if (gameData.status === 'finished') {
-                const sortedPlayers = [...gameData.players].sort((a,b) => b.score - a.score);
-                const winner = sortedPlayers[0];
+                const winner = gameData.players.reduce((p, c) => (p.score > c.score) ? p : c);
                 return (
-                    <div className="h-screen bg-gray-900 flex flex-col items-center justify-center text-white p-4 text-center overflow-auto">
+                    <div className="h-screen bg-gray-900 flex flex-col items-center justify-center text-white p-4 text-center">
                         <Crown size={64} className="text-yellow-400 mb-6 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]"/>
-                        <h1 className="text-3xl sm:text-5xl font-black mb-2 font-serif">{winner.name}</h1>
-                        <p className="text-lg text-gray-300 mb-8">Великий Майстер Синтезу</p>
-                        
-                        <div className="bg-white/10 rounded-2xl p-4 w-full max-w-md backdrop-blur-sm border border-white/20 mb-8">
-                            <h3 className="text-xs uppercase tracking-widest text-gray-400 mb-4 font-bold">Турнірна Таблиця</h3>
-                            {sortedPlayers.map((p, i) => (
-                                <div key={i} className="flex items-center justify-between p-3 border-b border-white/10 last:border-0">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${i===0 ? 'bg-yellow-500 text-black' : (i===1 ? 'bg-gray-400 text-black' : (i===2 ? 'bg-amber-700 text-white' : 'bg-gray-700 text-gray-400'))}`}>
-                                            {i+1}
-                                        </div>
-                                        <span className="font-bold">{p.name}</span>
-                                    </div>
-                                    <div className="font-mono font-bold text-yellow-400">{p.score} VP</div>
-                                </div>
-                            ))}
-                        </div>
-
+                        <h1 className="text-4xl sm:text-6xl font-black mb-4 font-serif">{winner.name}</h1>
+                        <p className="text-lg sm:text-2xl text-gray-300 mb-8">Великий Майстер Синтезу ({winner.score} VP)</p>
                         <button onClick={()=>window.location.reload()} className="px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200">До Головного Меню</button>
                     </div>
                 );
             }
 
             return (
-                <div className="h-screen bg-[#e8e8e8] flex flex-col md:flex-row overflow-hidden font-sans">
+                <div className="h-screen bg-[#e8e8e8] flex flex-col overflow-hidden font-sans">
                     {/* HEADER */}
-                    <header className="md:hidden bg-white border-b px-3 sm:px-4 py-2 flex flex-col shadow-sm z-30 shrink-0">
-                        <div className="flex justify-between items-center w-full mb-2">
-                            <div className="flex items-center gap-2 sm:gap-3">
-                                <div className="bg-[#006400] text-[#fceeb5] px-2 sm:px-3 py-1 rounded font-bold font-serif shadow-sm tracking-wider text-xs sm:text-sm flex items-center gap-1">
-                                    {gameId}
-                                    <button onClick={() => copyToClipboard(gameId)} className="ml-1 hover:text-white">
-                                        <ClipboardCopy size={12} />
-                                    </button>
-                                </div>
-                                <div className="text-[10px] sm:text-xs text-gray-400 hidden sm:block">Колода: {gameData.elementDeck.length}</div>
+                    <header className="bg-white border-b px-3 sm:px-4 py-2 flex justify-between items-center shadow-sm z-30 shrink-0">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="bg-[#006400] text-[#fceeb5] px-2 sm:px-3 py-1 rounded font-bold font-serif shadow-sm tracking-wider text-xs sm:text-sm">{gameId}</div>
+                        <div className="text-[10px] sm:text-xs text-gray-400 hidden sm:block">Колода: {gameData.elementDeck.length} | Молекули: {gameData.moleculeDeck.length}</div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                            {/* Mobile Menu Toggle */}
+                            <button 
+                                className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-full"
+                                onClick={() => setMobileMenuOpen(true)}
+                            >
+                                <Menu size={20} />
+                            </button>
+
+                            <div className={`px-3 sm:px-4 py-1.5 rounded-full font-bold text-[10px] sm:text-sm transition-colors ${isMyTurn ? 'bg-green-100 text-green-800 ring-2 ring-green-500 shadow-lg scale-105' : 'bg-gray-100 text-gray-500'}`}>
+                            {isMyTurn ? "ВАШ ХІД" : `Хід: ${gameData.players[gameData.turnIndex].name}`}
                             </div>
                             
-                            <div className="flex items-center gap-2">
-                                <div className={`px-3 sm:px-4 py-1.5 rounded-full font-bold text-[10px] sm:text-sm transition-colors ${isMyTurn ? 'bg-green-100 text-green-800 ring-2 ring-green-500 shadow-lg' : 'bg-gray-100 text-gray-500'}`}>
-                                    {isMyTurn ? "ВАШ ХІД" : `Хід: ${gameData.players[gameData.turnIndex].name}`}
-                                </div>
-                                <button className="text-gray-400 hover:text-red-500 hidden sm:block" onClick={()=>setGameId('')}><LogOut size={20}/></button>
-                            </div>
-                        </div>
-
-                        {/* MOBILE PLAYER LIST */}
-                        <div className="w-full overflow-x-auto scrollbar-hide flex gap-2 pb-1">
-                             {gameData.players.map((p, idx) => (
-                                <div key={p.uid} className={`flex-shrink-0 flex items-center gap-2 p-1.5 rounded-lg border text-[10px] sm:text-xs ${gameData.turnIndex === idx ? 'bg-green-50 border-green-300 ring-1 ring-green-300' : 'bg-gray-50 border-gray-200'}`}>
-                                   <div className={`w-1.5 h-1.5 rounded-full ${gameData.turnIndex === idx ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`}></div>
-                                   <span className="font-bold max-w-[60px] truncate">{p.name}</span>
-                                   <span className="bg-yellow-100 text-yellow-800 px-1 rounded font-bold">{p.score}</span>
-                                   <span className="text-gray-400">({p.hand.length})</span>
-                                </div>
-                             ))}
+                            <button className="text-gray-400 hover:text-red-500 hidden sm:block" onClick={()=>setGameId('')}><LogOut size={20}/></button>
                         </div>
                     </header>
 
-                    {/* MAIN AREA */}
-                    <main className="flex-grow flex flex-col overflow-hidden relative">
-                        
-                        {/* Market Area (Flex Grow to take space) */}
-                        <section className="flex-1 bg-[#dcdcdc] p-2 sm:p-4 overflow-y-auto relative min-h-0">
-                            <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-5 bg-[radial-gradient(#006400_1px,transparent_1px)] [background-size:16px_16px]"></div>
-                            
-                            <div className="max-w-5xl mx-auto">
-                                <div className="flex items-center gap-2 mb-4 sm:mb-6 opacity-70 px-2 sticky top-0 bg-[#dcdcdc] z-10 py-2">
-                                    <LayoutGrid size={18} />
-                                    <span className="font-bold text-xs sm:text-sm uppercase tracking-widest">Арена Молекул ({gameData.market.length})</span>
-                                </div>
-                                
-                                <div className="flex flex-wrap justify-center gap-2 sm:gap-6 pb-4">
-                                    {gameData.market.map(mol => (
-                                        <MoleculeCard 
-                                            key={mol.uniqueId} 
-                                            mol={mol} 
-                                            canBuy={isMyTurn && gameData.turnPhase === 'action' && checkRecipe(myPlayer.hand, mol.req)} 
-                                            onBuy={synthesize} 
-                                        />
-                                    ))}
-                                    {[...Array(4 - gameData.market.length)].map((_, i) => (
-                                        <div key={`placeholder-${i}`} className="w-[45%] sm:w-36 h-[160px] sm:h-[180px] rounded-xl border-2 border-dashed border-gray-400 flex items-center justify-center opacity-30">
-                                            <FlaskConical size={32}/>
-                                        </div>
-                                    ))}
-                                </div>
+                    {/* MOBILE MENU MODAL */}
+                    {isMobileMenuOpen && (
+                        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center pointer-events-none">
+                        <div className="absolute inset-0 bg-black/40 pointer-events-auto" onClick={() => setMobileMenuOpen(false)}></div>
+                        <div className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl shadow-2xl p-4 pointer-events-auto animate-in slide-in-from-bottom-10 max-h-[80vh] flex flex-col">
+                            <div className="flex justify-between items-center mb-4 border-b pb-2">
+                                <h2 className="font-bold text-lg text-[#006400]">Інфо про гру</h2>
+                                <button onClick={() => setMobileMenuOpen(false)} className="p-1 bg-gray-100 rounded-full"><X size={20}/></button>
                             </div>
-                        </section>
+                            
+                            <div className="flex gap-2 mb-4 bg-gray-100 p-1 rounded-lg">
+                                <button 
+                                    onClick={() => setMobileTab('players')}
+                                    className={`flex-1 py-2 rounded-md text-sm font-bold transition-all ${mobileTab === 'players' ? 'bg-white shadow text-[#006400]' : 'text-gray-500'}`}
+                                >
+                                    Гравці
+                                </button>
+                                <button 
+                                    onClick={() => setMobileTab('logs')}
+                                    className={`flex-1 py-2 rounded-md text-sm font-bold transition-all ${mobileTab === 'logs' ? 'bg-white shadow text-[#006400]' : 'text-gray-500'}`}
+                                >
+                                    Події
+                                </button>
+                            </div>
 
-                        {/* MOBILE LOG (Chronicle) - Between Market and Hand */}
-                        <div className="md:hidden h-32 bg-gray-50 border-t border-b border-gray-200 overflow-y-auto p-2">
-                            <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 sticky top-0 bg-gray-50">Хроніка подій</h4>
-                            <div className="space-y-1">
-                                {gameData.logs.slice(-10).reverse().map((l,i)=>(
-                                    <div key={i} className="text-[10px] sm:text-xs font-mono text-gray-600 border-l-2 border-gray-300 pl-2">
-                                        <span className="opacity-50 mr-1">{new Date(l.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
-                                        {l.text}
+                            <div className="flex-grow overflow-y-auto min-h-[200px]">
+                                {mobileTab === 'players' ? (
+                                    <div className="space-y-2">
+                                        {gameData.players.map((p, idx) => (
+                                            <div key={p.uid} className={`flex items-center justify-between p-3 rounded-xl ${gameData.turnIndex === idx ? 'bg-green-50 border border-green-200' : 'bg-gray-50'}`}>
+                                                <div className="flex items-center gap-3">
+                                                <div className={`w-2 h-2 rounded-full ${gameData.turnIndex === idx ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                                                <div className="flex flex-col">
+                                                    <span className="font-bold text-sm">{p.name} {p.uid === user.uid && '(Ви)'}</span>
+                                                    <span className="text-xs text-gray-400">Карт: {p.hand.length} | Мол: {p.molecules.length}</span>
+                                                </div>
+                                                </div>
+                                                <div className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-md font-bold">{p.score} VP</div>
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
+                                ) : (
+                                    <div className="space-y-2 text-xs font-mono text-gray-600">
+                                        {gameData.logs.slice(-20).reverse().map((l,i)=>(
+                                            <div key={i} className="border-l-2 border-gray-200 pl-2 py-1">
+                                                <span className="opacity-50 text-[10px] mr-2">{new Date(l.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+                                                {l.text}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="mt-4 pt-4 border-t text-center text-xs text-gray-400">
+                                Колода: {gameData.elementDeck.length} | Ринок: {gameData.market.length}
                             </div>
                         </div>
+                        </div>
+                    )}
 
+                    {/* MAIN AREA */}
+                    <main className="flex-grow flex overflow-hidden relative">
+                        
                         {/* Trade Overlay (Receiver) */}
                         {gameData.activeTrade && gameData.activeTrade.targetUid === user.uid && (
                             <div className="absolute inset-0 bg-black/60 z-50 flex items-center justify-center backdrop-blur-sm p-4">
@@ -897,16 +787,12 @@
                                     <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex items-center justify-between mb-6">
                                         <div className="text-center">
                                             <div className="text-[10px] sm:text-xs text-gray-400 uppercase font-bold mb-1">{gameData.activeTrade.fromName} дає</div>
-                                            <div className="font-black text-xl sm:text-2xl text-blue-600 flex flex-col items-center">
-                                                {gameData.activeTrade.giveCards.map((c, i) => <div key={i}>{c}</div>)}
-                                            </div>
+                                            <div className="font-black text-2xl sm:text-3xl text-blue-600">{gameData.activeTrade.giveCard}</div>
                                         </div>
                                         <RefreshCcw className="text-gray-300" />
                                         <div className="text-center">
                                             <div className="text-[10px] sm:text-xs text-gray-400 uppercase font-bold mb-1">Хоче</div>
-                                            <div className="font-black text-2xl sm:text-3xl text-green-600">
-                                                {gameData.activeTrade.wantCount}x {gameData.activeTrade.wantCard}
-                                            </div>
+                                            <div className="font-black text-2xl sm:text-3xl text-green-600">{gameData.activeTrade.wantCard}</div>
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-3">
@@ -914,32 +800,6 @@
                                         <button onClick={() => respondToTrade(true)} className="py-3 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 shadow-lg shadow-green-200 transition-all text-sm">Прийняти</button>
                                     </div>
                                 </div>
-                            </div>
-                        )}
-
-                        {/* FORCE DISCARD OVERLAY */}
-                        {isDiscardPhase && (
-                            <div className="absolute inset-0 bg-red-900/80 z-[60] flex items-center justify-center p-4 backdrop-blur-sm flex-col">
-                                <h2 className="text-2xl font-black text-white mb-2 animate-bounce">ПЕРЕВАНТАЖЕННЯ!</h2>
-                                <p className="text-white/80 mb-6 text-center max-w-xs">У вас {myPlayer.hand.length} карт. Максимум 10. <br/>Потрібно скинути: <span className="font-bold text-yellow-400 text-xl">{cardsToDiscard}</span></p>
-                                
-                                <div className="bg-white/10 p-4 rounded-xl backdrop-blur-md border border-white/20 mb-6">
-                                    <div className="text-center text-white mb-2 font-bold text-sm">Обрано: {selectedCards.length} / {cardsToDiscard}</div>
-                                    <div className="flex gap-1 justify-center">
-                                        {Array(cardsToDiscard).fill(0).map((_, i) => (
-                                            <div key={i} className={`w-3 h-3 rounded-full ${i < selectedCards.length ? 'bg-green-400' : 'bg-gray-600'}`}></div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <button 
-                                    onClick={forceDiscardAction}
-                                    disabled={selectedCards.length !== cardsToDiscard}
-                                    className="bg-red-500 hover:bg-red-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-8 py-4 rounded-full font-bold shadow-2xl transition-all flex items-center gap-2"
-                                >
-                                    <Trash2 /> Скинути обрані
-                                </button>
-                                <p className="text-white/50 text-xs mt-4">Оберіть карти знизу</p>
                             </div>
                         )}
 
@@ -973,150 +833,148 @@
                             </div>
                         )}
 
-                        {/* FOOTER - Updated height here */}
-                        <footer className={`bg-white border-t p-2 z-[70] relative shadow-[0_-5px_25px_rgba(0,0,0,0.1)] pb-safe transition-colors ${isDiscardPhase ? 'bg-red-50 border-red-200' : ''}`}>
-                            <div className="max-w-6xl mx-auto">
-                            {/* Notifications/Hints */}
-                            {tradeMode && tradeStep === 0 && <div className="text-center text-blue-600 font-bold text-xs sm:text-sm mb-2 animate-pulse bg-blue-50 py-1 rounded-full mx-auto w-max px-4">Оберіть карти для обміну (1-3 шт)</div>}
-                            {selectedCards.length > 0 && !tradeMode && !isDiscardPhase && <div className="text-center text-gray-500 text-[10px] sm:text-xs mb-2 bg-gray-100 py-0.5 rounded-full mx-auto w-max px-3">Обрано: {selectedCards.length}</div>}
-
-                            {/* HAND - Reduced Height */}
-                            <div className="w-full overflow-x-auto h-40 sm:h-56 mb-1 pb-2 pt-4 px-2 sm:px-4 scrollbar-hide flex items-end">
-                                <div className="flex items-end mx-auto min-w-min pl-6 sm:pl-10 pr-6">
-                                    {sortedHandMap.map(({ card, originalIdx }, i) => (
-                                        <ElementCard 
-                                            key={`${originalIdx}-${i}`}
-                                            type={card}
-                                            overlap={true} 
-                                            style={{ zIndex: selectedCards.includes(originalIdx) ? 50 : i, transformOrigin: 'bottom center', transform: selectedCards.includes(originalIdx) ? 'translateY(-20px)' : `rotate(${(i - sortedHandMap.length/2) * 2}deg)` }}
-                                            selected={selectedCards.includes(originalIdx)}
-                                            onClick={() => {
-                                                if (tradeMode && tradeStep === 0) {
-                                                    toggleSelectCard(originalIdx);
-                                                } else {
-                                                    toggleSelectCard(originalIdx);
-                                                }
-                                            }}
-                                        />
-                                    ))}
-                                    {sortedHandMap.length === 0 && (
-                                        <div className="text-gray-400 text-xs sm:text-sm font-bold border-2 border-dashed border-gray-300 rounded-xl w-20 h-32 sm:w-24 sm:h-36 flex items-center justify-center flex-shrink-0">
-                                            Пусто
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                            
-                            {/* CONTROLS */}
-                            {!isDiscardPhase ? (
-                                <div className="flex gap-2 sm:gap-3 justify-start sm:justify-center pb-2 overflow-x-auto items-center px-1 scrollbar-hide">
-                                    {isMyTurn && gameData.turnPhase === 'draw' && (
-                                        <button onClick={() => drawCards(2)} className="bg-gradient-to-r from-blue-600 to-blue-500 text-white px-6 sm:px-8 py-2 sm:py-3 rounded-full font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center gap-2 text-sm sm:text-base whitespace-nowrap mx-auto">
-                                            <Copy size={18}/> Взяти ресурси
-                                        </button>
-                                    )}
-
-                                    {isMyTurn && gameData.turnPhase === 'action' && !tradeMode && (
-                                        <div className="flex gap-2 mx-auto">
-                                            <button 
-                                                onClick={startTrade3to1} 
-                                                disabled={selectedCards.length !== 3} 
-                                                className="bg-yellow-50 text-yellow-700 border border-yellow-200 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-1 sm:gap-2 hover:bg-yellow-100 transition-colors disabled:opacity-50 disabled:grayscale whitespace-nowrap"
-                                            >
-                                                <RefreshCcw size={14}/> <span className="hidden sm:inline">Обмін</span> 3:1
-                                            </button>
-                                            
-                                            <button 
-                                                onClick={initPlayerTrade} 
-                                                className="bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-1 sm:gap-2 hover:bg-indigo-100 transition-colors whitespace-nowrap"
-                                            >
-                                                <Users size={14}/> <span className="hidden sm:inline">Обмін</span> Гравці
-                                            </button>
-
-                                            <div className="w-px h-6 sm:h-8 bg-gray-300 mx-1 sm:mx-2"></div>
-
-                                            <button onClick={endTurn} className="bg-gradient-to-r from-green-600 to-green-500 text-white px-4 sm:px-8 py-2 sm:py-3 rounded-full font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center gap-2 text-xs sm:text-sm whitespace-nowrap">
-                                            <Check size={16}/> <span className="hidden sm:inline">Завершити</span> Хід
-                                            </button>
-                                        </div>
-                                    )}
-                                    
-                                    {tradeMode && (
-                                        <button onClick={() => { setTradeMode(false); setTradeStep(0); setSelectedCards([]); }} className="bg-gray-200 text-gray-600 px-6 py-2 rounded-full font-bold text-xs sm:text-sm hover:bg-gray-300 mx-auto">
-                                            Скасувати
-                                        </button>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="text-center text-red-500 font-bold text-sm pb-3 animate-pulse">Оберіть карти для скидання, щоб продовжити гру!</div>
-                            )}
-                            </div>
-                        </footer>
-                    </main>
-
-                    {/* Desktop Sidebar (Moved to end of flex container for md:flex-row layout) */}
-                    <aside className="w-64 bg-white border-l hidden md:flex flex-col shadow-lg z-20 shrink-0 h-full relative">
-                        <div className="p-5 border-b bg-gray-50 flex flex-col gap-2">
-                             <div className="flex justify-between items-center mb-2">
-                                <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Таблиця лідерів</h3>
-                                <div className="flex items-center gap-1 bg-gray-200 px-2 py-0.5 rounded text-[10px] font-bold text-gray-600">
-                                    <span>Код: {gameId}</span>
-                                    <button onClick={() => copyToClipboard(gameId)} className="hover:text-black">
-                                        <ClipboardCopy size={10} />
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            {gameData.players.map((p, idx) => (
-                                <div key={p.uid} className={`flex items-center justify-between p-3 rounded-xl mb-1 transition-all ${gameData.turnIndex === idx ? 'bg-white border-2 border-green-500 shadow-md transform scale-105' : 'bg-gray-100 border border-transparent'}`}>
-                                    <div className="flex items-center gap-2 overflow-hidden">
+                        {/* Desktop Sidebar */}
+                        <aside className="w-64 bg-white border-r hidden lg:flex flex-col shadow-lg z-20">
+                            <div className="p-5 border-b bg-gray-50">
+                                <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Таблиця лідерів</h3>
+                                {gameData.players.map((p, idx) => (
+                                    <div key={p.uid} className={`flex items-center justify-between p-3 rounded-xl mb-2 transition-all ${gameData.turnIndex === idx ? 'bg-white border-2 border-green-500 shadow-md transform scale-105' : 'bg-gray-100 border border-transparent'}`}>
+                                        <div className="flex items-center gap-2 overflow-hidden">
                                         <div className={`w-2 h-2 rounded-full ${gameData.turnIndex === idx ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`}></div>
-                                        <div className="flex flex-col overflow-hidden">
-                                            <span className="font-bold text-sm truncate">{p.name} {p.uid === user.uid && '(Ви)'}</span>
-                                            <span className="text-[10px] text-gray-500 font-mono">Карт: {p.hand.length} | Мол: {p.molecules.length}</span>
+                                        <span className="font-bold text-sm truncate">{p.name}</span>
                                         </div>
-                                    </div>
-                                    <div className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-md font-bold shadow-sm">{p.score} VP</div>
-                                </div>
-                            ))}
-                        </div>
-                        <div className="flex-grow flex flex-col p-4 overflow-hidden bg-white">
-                            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Хроніка</h3>
-                            <div className="flex-grow overflow-y-auto text-xs space-y-3 font-mono text-gray-600 pr-2 custom-scrollbar">
-                                {gameData.logs.slice(-15).reverse().map((l,i)=>(
-                                    <div key={i} className="border-l-2 border-gray-200 pl-2 py-1 opacity-80 hover:opacity-100 hover:border-green-400 transition-colors">
-                                        <span className="opacity-50 text-[10px] block">{new Date(l.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
-                                        {l.text}
+                                        <div className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-md font-bold shadow-sm">{p.score} VP</div>
                                     </div>
                                 ))}
                             </div>
+                            <div className="flex-grow flex flex-col p-4 overflow-hidden bg-white">
+                                <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Хроніка</h3>
+                                <div className="flex-grow overflow-y-auto text-xs space-y-3 font-mono text-gray-600 pr-2 custom-scrollbar">
+                                    {gameData.logs.slice(-15).reverse().map((l,i)=>(
+                                        <div key={i} className="border-l-2 border-gray-200 pl-2 py-1 opacity-80 hover:opacity-100 hover:border-green-400 transition-colors">
+                                            <span className="opacity-50 text-[10px] block">{new Date(l.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+                                            {l.text}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </aside>
+
+                        {/* Market Area */}
+                        <section className="flex-grow bg-[#dcdcdc] p-2 sm:p-4 overflow-y-auto relative">
+                            <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-5 bg-[radial-gradient(#006400_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                            
+                            <div className="max-w-5xl mx-auto pb-40 sm:pb-32">
+                            <div className="flex items-center gap-2 mb-4 sm:mb-6 opacity-70 px-2">
+                                <LayoutGrid size={18} />
+                                <span className="font-bold text-xs sm:text-sm uppercase tracking-widest">Арена Молекул ({gameData.market.length})</span>
+                            </div>
+                            
+                            <div className="flex flex-wrap justify-center gap-2 sm:gap-6">
+                                {gameData.market.map(mol => (
+                                    <MoleculeCard 
+                                        key={mol.uniqueId} 
+                                        mol={mol} 
+                                        canBuy={isMyTurn && gameData.turnPhase === 'action' && checkRecipe(myPlayer.hand, mol.req)} 
+                                        onBuy={synthesize} 
+                                    />
+                                ))}
+                                {[...Array(4 - gameData.market.length)].map((_, i) => (
+                                    <div key={`placeholder-${i}`} className="w-[45%] sm:w-36 h-[160px] sm:h-[180px] rounded-xl border-2 border-dashed border-gray-400 flex items-center justify-center opacity-30">
+                                        <FlaskConical size={32}/>
+                                    </div>
+                                ))}
+                            </div>
+                            </div>
+                        </section>
+                    </main>
+
+                    {/* FOOTER */}
+                    <footer className="bg-white border-t p-2 z-40 relative shadow-[0_-5px_25px_rgba(0,0,0,0.1)] pb-safe">
+                        <div className="max-w-6xl mx-auto">
+                        {/* Notifications/Hints */}
+                        {tradeMode && tradeStep === 0 && <div className="text-center text-blue-600 font-bold text-xs sm:text-sm mb-2 animate-pulse bg-blue-50 py-1 rounded-full mx-auto w-max px-4">Оберіть карту для обміну</div>}
+                        {selectedCards.length > 0 && !tradeMode && <div className="text-center text-gray-500 text-[10px] sm:text-xs mb-2 bg-gray-100 py-0.5 rounded-full mx-auto w-max px-3">Обрано: {selectedCards.length}</div>}
+
+                        {/* HAND */}
+                        <div className="w-full overflow-x-auto h-42 sm:h-52 mb-2 pb-4 px-2 sm:px-4 scrollbar-hide flex items-end">
+                            <div className="flex items-end mx-auto min-w-min pl-6 sm:pl-10 pr-6">
+                                {sortedHandMap.map(({ card, originalIdx }, i) => (
+                                    <ElementCard 
+                                        key={`${originalIdx}-${i}`}
+                                        type={card}
+                                        overlap={true} 
+                                        style={{ zIndex: selectedCards.includes(originalIdx) ? 50 : i, transformOrigin: 'bottom center', transform: selectedCards.includes(originalIdx) ? 'translateY(-15px)' : `rotate(${(i - sortedHandMap.length/2) * 2}deg)` }}
+                                        selected={selectedCards.includes(originalIdx)}
+                                        onClick={() => {
+                                            if (tradeMode && tradeStep === 0) {
+                                                setSelectedCards([originalIdx]);
+                                                setTimeout(() => initPlayerTrade(), 150);
+                                            } else {
+                                                toggleSelectCard(originalIdx);
+                                            }
+                                        }}
+                                    />
+                                ))}
+                                {sortedHandMap.length === 0 && (
+                                    <div className="text-gray-400 text-xs sm:text-sm font-bold border-2 border-dashed border-gray-300 rounded-xl w-20 h-32 sm:w-24 sm:h-36 flex items-center justify-center flex-shrink-0">
+                                        Пусто
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                    </aside>
+                        
+                        {/* CONTROLS */}
+                        <div className="flex gap-2 sm:gap-3 justify-start sm:justify-center pb-2 overflow-x-auto items-center px-1 scrollbar-hide">
+                            {isMyTurn && gameData.turnPhase === 'draw' && (
+                                <button onClick={() => drawCards(2)} className="bg-gradient-to-r from-blue-600 to-blue-500 text-white px-6 sm:px-8 py-2 sm:py-3 rounded-full font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center gap-2 text-sm sm:text-base whitespace-nowrap mx-auto">
+                                    <Copy size={18}/> Взяти ресурси
+                                </button>
+                            )}
+
+                            {isMyTurn && gameData.turnPhase === 'action' && !tradeMode && (
+                                <div className="flex gap-2 mx-auto">
+                                    <button 
+                                        onClick={startTrade3to1} 
+                                        disabled={selectedCards.length !== 3} 
+                                        className="bg-yellow-50 text-yellow-700 border border-yellow-200 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-1 sm:gap-2 hover:bg-yellow-100 transition-colors disabled:opacity-50 disabled:grayscale whitespace-nowrap"
+                                    >
+                                        <RefreshCcw size={14}/> <span className="hidden sm:inline">Обмін</span> 3:1
+                                    </button>
+                                    
+                                    <button 
+                                        onClick={() => { setSelectedCards([]); setTradeMode(true); setTradeStep(0); }} 
+                                        className="bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-1 sm:gap-2 hover:bg-indigo-100 transition-colors whitespace-nowrap"
+                                    >
+                                        <Users size={14}/> <span className="hidden sm:inline">Обмін</span> Гравці
+                                    </button>
+
+                                    <div className="w-px h-6 sm:h-8 bg-gray-300 mx-1 sm:mx-2"></div>
+
+                                    {myPlayer.hand.length > 10 ? (
+                                        <button onClick={discardSelected} className="bg-red-500 text-white px-4 sm:px-8 py-2 sm:py-3 rounded-full font-bold shadow-lg animate-bounce flex items-center gap-2 text-xs sm:text-sm whitespace-nowrap">
+                                        <AlertTriangle size={16}/> Скинути ({selectedCards.length})
+                                        </button>
+                                    ) : (
+                                        <button onClick={endTurn} className="bg-gradient-to-r from-green-600 to-green-500 text-white px-4 sm:px-8 py-2 sm:py-3 rounded-full font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center gap-2 text-xs sm:text-sm whitespace-nowrap">
+                                        <Check size={16}/> <span className="hidden sm:inline">Завершити</span> Хід
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                            
+                            {tradeMode && (
+                                <button onClick={() => { setTradeMode(false); setTradeStep(0); setSelectedCards([]); }} className="bg-gray-200 text-gray-600 px-6 py-2 rounded-full font-bold text-xs sm:text-sm hover:bg-gray-300 mx-auto">
+                                    Скасувати
+                                </button>
+                            )}
+                        </div>
+                        </div>
+                    </footer>
                     
                     {/* MODALS */}
                     <ElementSelectorModal isOpen={is3to1ModalOpen} onClose={() => set3to1ModalOpen(false)} onSelect={confirmTrade3to1} title="Отримайте ресурс" />
-                    
-                    {/* TRADE SELECTOR MODAL - UPDATED with Quantity */}
-                    <ElementSelectorModal 
-                        isOpen={tradeMode && tradeStep === 1} 
-                        onClose={() => setTradeMode(false)} 
-                        onSelect={handleTradeStepSelection} 
-                        title={`Оберіть елемент для отримання`} 
-                        extraControls={
-                            <div className="flex justify-center gap-4 mb-4 border-b pb-4">
-                                <span className="text-sm font-bold text-gray-500 self-center">Кількість:</span>
-                                {[1, 2, 3].map(n => (
-                                    <button 
-                                        key={n}
-                                        onClick={() => setTradeOffer(prev => ({ ...prev, wantCount: n }))}
-                                        className={`w-10 h-10 rounded-full font-bold border-2 transition-all ${tradeOffer.wantCount === n ? 'bg-indigo-600 text-white border-indigo-600 scale-110' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}
-                                    >
-                                        {n}
-                                    </button>
-                                ))}
-                            </div>
-                        }
-                    />
+                    <ElementSelectorModal isOpen={tradeMode && tradeStep === 1} onClose={() => setTradeMode(false)} onSelect={handleTradeStepSelection} title="Що ви хочете отримати?" />
 
                     {notification && (
                         <div className={`fixed top-16 sm:top-24 left-1/2 -translate-x-1/2 px-4 sm:px-6 py-2 sm:py-3 rounded-xl shadow-2xl text-white font-bold z-[100] animate-in slide-in-from-top-4 text-xs sm:text-sm whitespace-nowrap ${notification.type==='error'?'bg-red-500':'bg-green-600'}`}>
