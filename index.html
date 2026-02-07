@@ -2,82 +2,51 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>СИНТЕЗ - Хімічна Стратегія</title>
     
-    <!-- Підключаємо Tailwind CSS для стилів -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Підключаємо Babel для розуміння React коду -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Стилі для скролбару та анімацій -->
     <style>
-        .scrollbar-hide::-webkit-scrollbar {
-            display: none;
-        }
-        .scrollbar-hide {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            background-color: #e8e8e8;
         }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
-    <!-- Основний скрипт гри -->
     <script type="text/babel" data-type="module">
-        // --- ІМПОРТИ БІБЛІОТЕК З CDN ---
-        import React, { useState, useEffect, useMemo, useRef } from 'https://esm.sh/react@18.2.0';
+        import React, { useState, useEffect, useMemo } from 'https://esm.sh/react@18.2.0';
         import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { 
-            getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, 
-            arrayUnion, runTransaction 
-        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-        import { 
-            getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken 
-        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+        import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, arrayUnion, runTransaction } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
         import { 
             Atom, FlaskConical, Users, Copy, Check, AlertTriangle, 
-            ArrowRightLeft, Play, RotateCcw, Crown, LogOut, Loader2, X, RefreshCcw, LayoutGrid, Menu, History 
+            ArrowRightLeft, Play, Crown, LogOut, Loader2, X, RefreshCcw, LayoutGrid, Trash2, ClipboardCopy, Layers
         } from 'https://esm.sh/lucide-react@0.263.1';
 
-        // ==========================================
-        // НАЛАШТУВАННЯ FIREBASE (ВАЖЛИВО!)
-        // Замініть цей об'єкт на конфігурацію вашого проекту з Firebase Console
-        // ==========================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyCCMdryzKt4-sRq2snh16Ciug2V_cRcBIU",
-            authDomain: "synthesis-game-chem.firebaseapp.com",
-            projectId: "synthesis-game-chem",
-            storageBucket: "synthesis-game-chem.firebasestorage.app",
-            messagingSenderId: "441318316675",
-            appId: "1:441318316675:web:361daca49c3924e94a99b6"
-        };
-        
-        // Ініціалізація Firebase
-        let app, auth, db;
-        try {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-        } catch (e) {
-            console.error("Помилка ініціалізації Firebase. Перевірте конфігурацію.", e);
-        }
+        // --- ІНІЦІАЛІЗАЦІЯ FIREBASE (Автоматична) ---
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-synthesis-game';
 
-        const appId = 'synthesis-game'; // ID колекції в базі даних
-
-        // --- КОНФІГУРАЦІЯ ГРИ ТА ДАНІ ---
-
-        const ELEMENT_DISTRIBUTION = {
-            'H': 24, 'O': 34, 'C': 12, 'Na': 10, 'Cl': 7, 'Ca': 8, 'N': 7, 'S': 6, 'Si': 4
-        };
-
+        // --- КОНСТАНТИ ГРИ ---
         const ELEMENTS = {
             'H':  { m: 1,  name: 'Гідроген', color: 'bg-blue-100 text-blue-900 border-blue-300' },
             'O':  { m: 16, name: 'Оксиген',  color: 'bg-red-100 text-red-900 border-red-300' },
@@ -91,12 +60,10 @@
         };
 
         const MOLECULES_LIST = [
-            // Прості
             { id: 'h2o',     f: 'H₂O',      name: 'Вода',              vp: 3, count: 6, req: { 'H': 2, 'O': 1 } },
             { id: 'co',      f: 'CO',       name: 'Чадний газ',        vp: 4, count: 4, req: { 'C': 1, 'O': 1 } },
             { id: 'hcl',     f: 'HCl',      name: 'Хлоридна кислота',  vp: 6, count: 3, req: { 'H': 1, 'Cl': 1 } },
             { id: 'cao',     f: 'CaO',      name: 'Негашене вапно',    vp: 4, count: 3, req: { 'Ca': 1, 'O': 1 } },
-            // Середні
             { id: 'co2',     f: 'CO₂',      name: 'Вуглекислий газ',   vp: 5, count: 5, req: { 'C': 1, 'O': 2 } },
             { id: 'nacl',    f: 'NaCl',     name: 'Кухонна сіль',      vp: 8, count: 4, req: { 'Na': 1, 'Cl': 1 } },
             { id: 'naoh',    f: 'NaOH',     name: 'Каустична сода',    vp: 5, count: 3, req: { 'Na': 1, 'O': 1, 'H': 1 } },
@@ -104,7 +71,6 @@
             { id: 'h2o2',    f: 'H₂O₂',     name: 'Перекис водню',     vp: 4, count: 2, req: { 'H': 2, 'O': 2 } },
             { id: 'so2',     f: 'SO₂',      name: 'Сірчистий газ',     vp: 4, count: 2, req: { 'S': 1, 'O': 2 } },
             { id: 'sio2',    f: 'SiO₂',     name: 'Пісок',             vp: 10, count: 2, req: { 'Si': 1, 'O': 2 } },
-            // Складні
             { id: 'caoh2',   f: 'Ca(OH)₂',  name: 'Гашене вапно',      vp: 7, count: 2, req: { 'Ca': 1, 'O': 2, 'H': 2 } },
             { id: 'h2so4',   f: 'H₂SO₄',    name: 'Сульфатна кислота', vp: 12, count: 1, req: { 'H': 2, 'S': 1, 'O': 4 } },
             { id: 'caco3',   f: 'CaCO₃',    name: 'Крейда',            vp: 9, count: 3, req: { 'Ca': 1, 'C': 1, 'O': 3 } },
@@ -112,882 +78,377 @@
             { id: 'na2co3',  f: 'Na₂CO₃',   name: 'Кальцинована сода', vp: 12, count: 3, req: { 'Na': 2, 'C': 1, 'O': 3 } },
         ];
 
-        const WINNING_SCORE = 50;
-
         // --- ДОПОМІЖНІ ФУНКЦІЇ ---
-        const shuffleArray = (array) => {
-            let arr = [...array];
-            for (let i = arr.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [arr[i], arr[j]] = [arr[j], arr[i]];
-            }
-            return arr;
+        const shuffleArray = (arr) => [...arr].sort(() => Math.random() - 0.5);
+        const checkRecipe = (hand, req) => {
+            const counts = {};
+            hand.forEach(el => counts[el] = (counts[el] || 0) + 1);
+            return Object.entries(req).every(([el, n]) => (counts[el] || 0) >= n);
         };
 
-        const generateElementDeck = () => {
-            let deck = [];
-            Object.entries(ELEMENT_DISTRIBUTION).forEach(([el, count]) => {
-                for (let i = 0; i < count; i++) deck.push(el);
-            });
-            return shuffleArray(deck);
-        };
-
-        const generateMoleculeDeck = () => {
-            let deck = [];
-            MOLECULES_LIST.forEach(mol => {
-                for (let i = 0; i < (mol.count || 1); i++) {
-                    deck.push({ ...mol, uniqueId: `${mol.id}_${i}_${Math.random().toString(36).substr(2, 5)}` });
-                }
-            });
-            return shuffleArray(deck);
-        };
-
-        const checkRecipe = (hand, recipe) => {
-            const handCounts = {};
-            hand.forEach(el => handCounts[el] = (handCounts[el] || 0) + 1);
-            for (const [el, needed] of Object.entries(recipe)) {
-                if (!handCounts[el] || handCounts[el] < needed) return false;
-            }
-            return true;
-        };
-
-        // --- КОМПОНЕНТИ ---
-
-        const ElementCard = ({ type, count, mini = false, onClick, selected = false, style, overlap = false }) => {
+        // --- КОМПОНЕНТИ КАРТ ---
+        const ElementCard = ({ type, mini, onClick, selected, style, overlap }) => {
             const data = ELEMENTS[type] || { m: '?', name: type, color: 'bg-gray-300' };
-            
-            if (mini) {
-                return (
-                    <div 
-                        className={`
-                        relative flex items-center justify-center w-10 h-12 rounded border shadow-sm select-none
-                        ${data.color} ${selected ? 'ring-2 ring-blue-600 scale-110 z-10' : ''}
-                        cursor-pointer transition-all
-                        `}
-                        onClick={onClick}
-                    >
-                        <span className="font-bold text-sm">{type}</span>
-                    </div>
-                );
-            }
-
+            if (mini) return (
+                <div onClick={onClick} className={`w-10 h-12 rounded border flex items-center justify-center font-bold text-sm cursor-pointer shadow-sm ${data.color} ${selected ? 'ring-2 ring-blue-600 scale-110 z-10' : ''}`}>
+                    {type}
+                </div>
+            );
             return (
-                <div 
-                    onClick={onClick}
-                    style={style}
-                    className={`
-                        relative w-20 h-32 sm:w-24 sm:h-36 rounded-xl shadow-md border-2 flex flex-col justify-between p-2 select-none transition-all duration-300 flex-shrink-0
-                        ${data.color} ${selected ? 'ring-4 ring-blue-500 -translate-y-6 sm:-translate-y-8 z-30' : 'hover:-translate-y-2 sm:hover:-translate-y-4 hover:z-20'}
-                        ${overlap ? '-ml-10 sm:-ml-12 hover:ml-1' : ''}
-                        cursor-pointer bg-gradient-to-br from-white/60 to-transparent
-                    `}
-                >
-                    {/* Верх: Символ зліва, Маса справа */}
-                    <div className="flex justify-between items-start font-bold leading-none">
-                        <span className="text-base sm:text-lg">{type}</span>
-                        <span className="text-[10px] sm:text-xs opacity-60 pt-1">{data.m}</span>
-                    </div>
-
-                    {/* Центр */}
-                    <div className="flex flex-col items-center justify-center flex-grow">
-                        <span className="text-3xl sm:text-4xl font-black font-serif opacity-90">{type}</span>
-                        <span className="text-[0.5rem] sm:text-[0.6rem] uppercase tracking-wider opacity-70 mt-1 text-center leading-tight truncate w-full">{data.name}</span>
-                    </div>
-
-                    {/* Низ: Символ зліва, Маса справа (обернуті) */}
-                    <div className="flex justify-between items-end font-bold leading-none rotate-180">
-                        <span className="text-base sm:text-lg">{type}</span>
-                        <span className="text-[10px] sm:text-xs opacity-60 pb-1">{data.m}</span>
-                    </div>
+                <div onClick={onClick} style={style} className={`relative w-20 h-32 sm:w-24 sm:h-36 rounded-xl border-2 flex flex-col justify-between p-2 cursor-pointer transition-all duration-300 flex-shrink-0 ${data.color} ${selected ? 'ring-4 ring-blue-500 -translate-y-8 z-30' : 'hover:-translate-y-4 hover:z-20'} ${overlap ? '-ml-12 hover:ml-1' : ''}`}>
+                    <div className="flex justify-between font-bold text-xs sm:text-sm"><span>{type}</span><span className="opacity-60">{data.m}</span></div>
+                    <div className="text-center"><div className="text-3xl sm:text-4xl font-black font-serif">{type}</div><div className="text-[0.6rem] uppercase opacity-70 truncate">{data.name}</div></div>
+                    <div className="flex justify-between font-bold text-xs sm:text-sm rotate-180"><span>{type}</span><span className="opacity-60">{data.m}</span></div>
                 </div>
             );
         };
 
-        const MoleculeCard = ({ mol, canBuy, onBuy }) => {
-            return (
-                <div className={`
-                    relative w-[45%] sm:w-36 h-auto min-h-[160px] sm:min-h-[180px] bg-[#fffdf5] rounded-xl border-2 border-[#006400] shadow-lg flex flex-col
-                    ${canBuy ? 'ring-4 ring-green-400 cursor-pointer hover:scale-105' : 'opacity-100'}
-                    transition-all mb-2
-                `} onClick={() => canBuy && onBuy(mol)}>
-                    <div className="absolute top-0 right-0 bg-[#006400] text-white text-[10px] sm:text-xs px-2 py-1 rounded-bl-lg font-bold">
-                        {mol.vp} VP
-                    </div>
-                    <div className="p-2 sm:p-3 text-center border-b border-[#006400]/20 mt-2">
-                        <div className="text-xl sm:text-2xl font-bold text-gray-800 font-serif leading-tight">{mol.f}</div>
-                        <div className="text-[0.6rem] sm:text-[0.7rem] uppercase text-gray-600 mt-1 font-bold line-clamp-2 min-h-[1.5em]">{mol.name}</div>
-                    </div>
-                    <div className="p-2 flex flex-wrap justify-center gap-1 bg-gradient-to-b from-transparent to-[#fceeb5]/30 flex-grow content-center">
-                        {Object.entries(mol.req).map(([el, count]) => (
-                        <div key={el} className={`
-                            text-[0.6rem] sm:text-[0.65rem] px-1.5 sm:px-2 py-0.5 rounded-full border border-black/10 font-bold flex items-center gap-1 shadow-sm
-                            ${ELEMENTS[el]?.color || 'bg-gray-200'}
-                        `}>
-                            <span>{el}</span>
-                            {count > 1 && <span>x{count}</span>}
-                        </div>
-                        ))}
-                    </div>
-                    {canBuy && (
-                        <div className="absolute inset-0 bg-green-500/20 flex items-center justify-center rounded-xl opacity-0 hover:opacity-100 transition-opacity backdrop-blur-[1px]">
-                            <span className="bg-green-600 text-white px-3 py-1 sm:px-4 sm:py-2 rounded-full shadow-lg font-bold text-xs sm:text-sm transform scale-105">Синтез</span>
-                        </div>
-                    )}
+        const MoleculeCard = ({ mol, canBuy, onBuy }) => (
+            <div onClick={() => canBuy && onBuy(mol)} className={`relative w-[45%] sm:w-36 h-auto min-h-[160px] bg-[#fffdf5] rounded-xl border-2 border-[#006400] shadow-lg flex flex-col p-2 transition-all ${canBuy ? 'ring-4 ring-green-400 cursor-pointer scale-105' : ''}`}>
+                <div className="absolute top-0 right-0 bg-[#006400] text-white text-[10px] px-2 py-0.5 rounded-bl-lg font-bold">{mol.vp} VP</div>
+                <div className="text-center mt-2 border-b border-green-800/10 pb-1">
+                    <div className="text-xl sm:text-2xl font-bold font-serif">{mol.f}</div>
+                    <div className="text-[10px] uppercase text-gray-600 font-bold">{mol.name}</div>
                 </div>
-            );
-        };
-
-        const ElementSelectorModal = ({ isOpen, onClose, onSelect, title }) => {
-            if (!isOpen) return null;
-            return (
-                <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-4 sm:p-6 animate-in fade-in zoom-in duration-200">
-                        <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg sm:text-xl font-bold text-gray-800">{title}</h3>
-                        <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full bg-gray-50"><X size={20}/></button>
-                        </div>
-                        <div className="grid grid-cols-4 gap-2 sm:gap-3 max-h-[60vh] overflow-y-auto p-1">
-                        {Object.keys(ELEMENTS).map(el => (
-                            <div key={el} onClick={() => onSelect(el)} className="cursor-pointer hover:scale-105 transition-transform flex justify-center">
-                            <ElementCard type={el} mini />
-                            </div>
-                        ))}
-                        </div>
-                    </div>
+                <div className="flex flex-wrap justify-center gap-1 mt-auto pb-1">
+                    {Object.entries(mol.req).map(([el, n]) => Array(n).fill(0).map((_, i) => (
+                        <div key={el+i} className={`w-5 h-5 rounded-full border border-black/10 flex items-center justify-center text-[10px] font-bold ${ELEMENTS[el].color}`}>{el}</div>
+                    )))}
                 </div>
-            );
-        };
+            </div>
+        );
 
-        // --- ГОЛОВНИЙ КОМПОНЕНТ ДОДАТКУ ---
-
-        const SynthesisGame = () => {
+        // --- ГОЛОВНА ЛОГІКА ---
+        const App = () => {
             const [user, setUser] = useState(null);
             const [gameId, setGameId] = useState('');
             const [gameData, setGameData] = useState(null);
-            const [loading, setLoading] = useState(false);
-            
-            // Selection States
-            const [selectedCards, setSelectedCards] = useState([]);
+            const [playerName, setPlayerName] = useState('');
+            const [targetId, setTargetId] = useState('');
+            const [selected, setSelected] = useState([]);
             const [notification, setNotification] = useState(null);
-            const [playerName, setPlayerName] = useState('Хімік');
-            const [targetGameId, setTargetGameId] = useState('');
-
-            // Mobile Menu State
-            const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
-            const [mobileTab, setMobileTab] = useState('players'); // 'players' | 'logs'
-
-            // Trade States
-            const [is3to1ModalOpen, set3to1ModalOpen] = useState(false);
             const [tradeMode, setTradeMode] = useState(false);
-            const [tradeStep, setTradeStep] = useState(0); 
-            const [tradeOffer, setTradeOffer] = useState({ giveIdx: null, wantEl: null, targetUid: null });
+            const [tradeStep, setTradeStep] = useState(0);
+            const [tradeOffer, setTradeOffer] = useState({ wantEl: null, giveIdxs: [] });
 
-            // Auth
             useEffect(() => {
-                if (!auth) return;
                 const initAuth = async () => {
-                    try {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token).catch(() => signInAnonymously(auth));
+                    } else {
                         await signInAnonymously(auth);
-                    } catch (error) {
-                        console.error("Auth error:", error);
-                        setNotification({ type: 'error', msg: "Помилка автентифікації. Перевірте конфіг Firebase." });
                     }
                 };
                 initAuth();
-                return onAuthStateChanged(auth, u => setUser(u));
+                onAuthStateChanged(auth, setUser);
             }, []);
 
-            // Sync Data
             useEffect(() => {
-                if (!gameId || !user || !db) return;
-                const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId);
-                const unsubscribe = onSnapshot(gameRef, (snap) => {
-                    if (snap.exists()) {
-                        setGameData(snap.data());
-                    } else {
-                        setNotification({ type: 'error', msg: 'Кімнату не знайдено' });
-                        setGameId('');
-                    }
-                }, (err) => {
-                    console.error(err);
-                    setNotification({ type: 'error', msg: "Помилка доступу до бази даних" });
+                if (!gameId || !user) return;
+                const unsub = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId), (s) => {
+                    if (s.exists()) setGameData(s.data());
+                    else setNotification({ type: 'error', msg: 'Гру не знайдено' });
                 });
-                return () => unsubscribe();
+                return unsub;
             }, [gameId, user]);
 
             const myIndex = gameData?.players.findIndex(p => p.uid === user?.uid) ?? -1;
             const myPlayer = myIndex !== -1 ? gameData.players[myIndex] : null;
             const isMyTurn = gameData?.status === 'playing' && gameData?.turnIndex === myIndex;
-            const isHost = gameData?.players[0].uid === user?.uid;
-
-            const sortedHandMap = useMemo(() => {
-                if (!myPlayer) return [];
-                return myPlayer.hand
-                    .map((card, originalIdx) => ({ card, originalIdx }))
-                    .sort((a, b) => {
-                        if (a.card === b.card) return a.originalIdx - b.originalIdx;
-                        return a.card.localeCompare(b.card);
-                    });
-            }, [myPlayer?.hand]);
-
-            // --- ДІЇ ---
-
-            const createGame = async () => {
-                if (!user || !db) return;
-                setLoading(true);
-                const newGameId = Math.random().toString(36).substring(2, 8).toUpperCase();
-                
-                const molDeck = generateMoleculeDeck();
-                const initialMarket = molDeck.splice(0, 4); 
-
-                const initialData = {
-                    id: newGameId,
-                    status: 'waiting', 
-                    players: [{
-                        uid: user.uid,
-                        name: playerName || 'Хімік-1',
-                        hand: [],
-                        score: 0,
-                        molecules: []
-                    }],
-                    elementDeck: generateElementDeck(),
-                    moleculeDeck: molDeck,
-                    market: initialMarket,
-                    discardPile: [],
-                    turnIndex: 0,
-                    logs: [{ text: `Гру створено гравцем ${playerName}`, time: Date.now() }],
-                    turnPhase: 'draw', 
-                    activeTrade: null 
-                };
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', newGameId), initialData);
-                setGameId(newGameId);
-                setLoading(false);
+            
+            const notify = (msg, type = 'success') => {
+                setNotification({ msg, type });
+                setTimeout(() => setNotification(null), 3000);
             };
 
-            const joinGame = async (code) => {
-                if (!user || !code || !db) return;
-                setLoading(true);
-                const codeUpper = code.toUpperCase().trim();
-                const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', codeUpper);
-                try {
-                    await runTransaction(db, async (transaction) => {
-                        const sfDoc = await transaction.get(gameRef);
-                        if (!sfDoc.exists()) throw "Кімнати не існує";
-                        const data = sfDoc.data();
-                        if (data.status !== 'waiting' && !data.players.some(p => p.uid === user.uid)) throw "Гра вже почалась";
-                        if (data.players.some(p => p.uid === user.uid)) return;
-                        if (data.players.length >= 4) throw "Кімната переповнена";
+            const copyRoomCode = () => {
+                const el = document.createElement('textarea');
+                el.value = gameId;
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+                notify('Код кімнати скопійовано!');
+            };
 
-                        const newPlayer = { uid: user.uid, name: playerName, hand: [], score: 0, molecules: [] };
-                        transaction.update(gameRef, {
-                        players: arrayUnion(newPlayer),
+            const createGame = async () => {
+                if (!playerName.trim()) return notify('Введіть ім\'я!', 'error');
+                const id = Math.random().toString(36).substring(2, 8).toUpperCase();
+                const deck = [];
+                Object.entries({'H':24,'O':34,'C':12,'Na':10,'Cl':7,'Ca':8,'N':7,'S':6,'Si':4}).forEach(([el,n])=> {for(let i=0;i<n;i++) deck.push(el)});
+                const molDeck = shuffleArray(MOLECULES_LIST.flatMap(m => Array(m.count).fill(0).map((_,i)=>({...m, uniqueId: `${m.id}_${i}_${Math.random()}`} ))));
+                
+                const data = {
+                    id, status: 'waiting', turnIndex: 0, turnPhase: 'draw',
+                    players: [{ uid: user.uid, name: playerName, hand: [], score: 0, molecules: [] }],
+                    elementDeck: shuffleArray(deck), market: molDeck.splice(0, 4), moleculeDeck: molDeck,
+                    logs: [{ text: `Гру створено: ${playerName}`, time: Date.now() }]
+                };
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', id), data)
+                    .then(() => setGameId(id))
+                    .catch(() => notify('Помилка доступу Firestore!', 'error'));
+            };
+
+            const joinGame = async () => {
+                if (!playerName.trim()) return notify('Введіть ім\'я!', 'error');
+                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'games', targetId.toUpperCase());
+                await runTransaction(db, async (t) => {
+                    const s = await t.get(ref);
+                    if (!s.exists()) throw "Кімнати немає";
+                    const d = s.data();
+                    if (d.players.length >= 4) throw "Кімната повна";
+                    if (d.players.some(p => p.uid === user.uid)) return;
+                    t.update(ref, { 
+                        players: arrayUnion({ uid: user.uid, name: playerName, hand: [], score: 0, molecules: [] }),
                         logs: arrayUnion({ text: `${playerName} приєднався`, time: Date.now() })
-                        });
                     });
-                    setGameId(codeUpper);
-                } catch (e) {
-                    setNotification({ type: 'error', msg: e.toString() });
-                }
-                setLoading(false);
+                }).then(() => setGameId(targetId.toUpperCase())).catch(e => notify(e, 'error'));
             };
 
             const startGame = async () => {
-                if (!gameData || !db) return;
-                const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId);
-                const newDeck = [...gameData.elementDeck];
-                const updatedPlayers = gameData.players.map(p => ({ ...p, hand: newDeck.splice(0, 5) }));
-                await updateDoc(gameRef, {
-                    status: 'playing', elementDeck: newDeck, players: updatedPlayers, turnPhase: 'draw',
-                    logs: arrayUnion({ text: 'Гра почалася! Роздано по 5 карт.', time: Date.now() })
+                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId);
+                const deck = [...gameData.elementDeck];
+                const players = gameData.players.map(p => ({ ...p, hand: deck.splice(0, 5) }));
+                await updateDoc(ref, { status: 'playing', players, elementDeck: deck, logs: arrayUnion({ text: 'Гру розпочато!', time: Date.now() }) });
+            };
+
+            const drawCards = async () => {
+                if (!isMyTurn || gameData.turnPhase !== 'draw') return;
+                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId);
+                const deck = [...gameData.elementDeck];
+                const players = [...gameData.players];
+                players[myIndex].hand.push(...deck.splice(0, 2));
+                await updateDoc(ref, { 
+                    players, elementDeck: deck, turnPhase: 'action', 
+                    logs: arrayUnion({ text: `${myPlayer.name} взяв ресурси`, time: Date.now() }) 
                 });
             };
 
-            const drawCards = async (count = 2) => {
-                if (!gameData || !isMyTurn || gameData.turnPhase !== 'draw') return;
-                const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId);
-                let newDeck = [...gameData.elementDeck];
+            const synthesize = async (mol) => {
+                if (!isMyTurn || gameData.turnPhase !== 'action') return;
+                if (!checkRecipe(myPlayer.hand, mol.req)) return notify('Недостатньо атомів!', 'error');
                 
-                if (newDeck.length < count) {
-                    if (gameData.discardPile.length > 0) {
-                        newDeck.push(...shuffleArray(gameData.discardPile));
-                        await updateDoc(gameRef, { elementDeck: newDeck, discardPile: [] });
-                        return; 
-                    } else {
-                        setNotification({ type: 'error', msg: 'Колода пуста!' });
-                        return;
-                    }
-                }
-
-                const drawn = newDeck.splice(0, count);
-                const updatedPlayers = [...gameData.players];
-                updatedPlayers[myIndex].hand.push(...drawn);
-
-                await updateDoc(gameRef, {
-                    elementDeck: newDeck, players: updatedPlayers, turnPhase: 'action',
-                    logs: arrayUnion({ text: `${myPlayer.name} взяв ${count} карти`, time: Date.now() })
-                });
-            };
-
-            const synthesize = async (molecule) => {
-                if (!gameData || !isMyTurn || gameData.turnPhase !== 'action') return;
-                const player = gameData.players[myIndex];
+                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId);
+                const players = [...gameData.players];
+                const p = players[myIndex];
+                Object.entries(mol.req).forEach(([el, n]) => { for(let i=0; i<n; i++) p.hand.splice(p.hand.indexOf(el), 1); });
+                p.score += mol.vp;
+                p.molecules.push(mol.id);
                 
-                const marketIndex = gameData.market.findIndex(m => m.uniqueId === molecule.uniqueId);
-                if (marketIndex === -1) {
-                    setNotification({type:'error', msg: "Цю картку вже хтось забрав!"});
-                    return;
-                }
+                const market = gameData.market.filter(m => m.uniqueId !== mol.uniqueId);
+                const molDeck = [...gameData.moleculeDeck];
+                if (molDeck.length) market.push(molDeck.shift());
 
-                if (!checkRecipe(player.hand, molecule.req)) return;
-
-                let newHand = [...player.hand];
-                const discarded = [];
-                Object.entries(molecule.req).forEach(([el, count]) => {
-                    for(let i=0; i<count; i++) {
-                        const idx = newHand.indexOf(el);
-                        if (idx > -1) { discarded.push(newHand[idx]); newHand.splice(idx, 1); }
-                    }
-                });
-
-                const updatedPlayers = [...gameData.players];
-                updatedPlayers[myIndex] = { ...player, hand: newHand, molecules: [...player.molecules, molecule.id], score: player.score + molecule.vp };
-                
-                const newMarket = [...gameData.market];
-                const newMoleculeDeck = [...gameData.moleculeDeck];
-                newMarket.splice(marketIndex, 1); 
-                
-                if (newMoleculeDeck.length > 0) {
-                    newMarket.push(newMoleculeDeck.shift());
-                }
-
-                let status = updatedPlayers[myIndex].score >= WINNING_SCORE ? 'finished' : 'playing';
-                
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId), {
-                    players: updatedPlayers, 
-                    discardPile: [...gameData.discardPile, ...discarded], 
-                    status,
-                    market: newMarket,
-                    moleculeDeck: newMoleculeDeck,
-                    logs: arrayUnion({ text: `${player.name} синтезував ${molecule.name} (+${molecule.vp} VP)`, time: Date.now() })
-                });
-            };
-
-            const startTrade3to1 = () => {
-                if (selectedCards.length !== 3) {
-                    setNotification({ type: 'error', msg: 'Виберіть рівно 3 карти' }); return;
-                }
-                const hand = myPlayer.hand;
-                const firstCard = hand[selectedCards[0]];
-                if (!selectedCards.every(idx => hand[idx] === firstCard)) {
-                    setNotification({ type: 'error', msg: 'Карти мають бути однакові!' }); return;
-                }
-                set3to1ModalOpen(true);
-            };
-
-            const confirmTrade3to1 = async (wantedElement) => {
-                const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId);
-                const hand = myPlayer.hand;
-                const firstCard = hand[selectedCards[0]];
-                let newHand = [...hand];
-                selectedCards.sort((a,b) => b-a).forEach(idx => newHand.splice(idx, 1));
-                newHand.push(wantedElement);
-
-                const updatedPlayers = [...gameData.players];
-                updatedPlayers[myIndex].hand = newHand;
-
-                await updateDoc(gameRef, {
-                    players: updatedPlayers,
-                    discardPile: [...gameData.discardPile, firstCard, firstCard, firstCard],
-                    logs: arrayUnion({ text: `${myPlayer.name} обміняв 3 ${firstCard} на ${wantedElement}`, time: Date.now() })
-                });
-                setSelectedCards([]);
-                set3to1ModalOpen(false);
-            };
-
-            const initPlayerTrade = () => {
-                if (selectedCards.length !== 1) {
-                    setNotification({ type: 'error', msg: 'Виберіть 1 карту, яку хочете віддати' });
-                    return;
-                }
-                setTradeOffer({ giveIdx: selectedCards[0], wantEl: null, targetUid: null });
-                setTradeMode(true);
-                setTradeStep(1); 
-            };
-
-            const handleTradeStepSelection = (val) => {
-                if (tradeStep === 1) { 
-                    setTradeOffer(prev => ({ ...prev, wantEl: val }));
-                    setTradeStep(2); 
-                }
-            };
-
-            const sendTradeOffer = async (targetUid) => {
-                if (!tradeOffer.wantEl || tradeOffer.giveIdx === null) return;
-                const cardToGive = myPlayer.hand[tradeOffer.giveIdx];
-                const targetName = gameData.players.find(p => p.uid === targetUid).name;
-                const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId);
-                await updateDoc(gameRef, {
-                    activeTrade: {
-                        fromUid: user.uid, fromName: myPlayer.name, targetUid: targetUid, targetName: targetName,
-                        giveCard: cardToGive, giveCardIdx: tradeOffer.giveIdx, wantCard: tradeOffer.wantEl, status: 'pending'
-                    },
-                    logs: arrayUnion({ text: `${myPlayer.name} пропонує обмін ${targetName}`, time: Date.now() })
-                });
-                setTradeMode(false); setTradeStep(0); setSelectedCards([]);
-                setNotification({ type: 'success', msg: 'Пропозицію відправлено!' });
-            };
-
-            const respondToTrade = async (accepted) => {
-                if (!gameData.activeTrade) return;
-                const trade = gameData.activeTrade;
-                const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId);
-                if (!accepted) {
-                    await updateDoc(gameRef, { activeTrade: null, logs: arrayUnion({ text: `Обмін скасовано`, time: Date.now() }) });
-                    return;
-                }
-                const myHand = myPlayer.hand;
-                const cardIdx = myHand.indexOf(trade.wantCard);
-                if (cardIdx === -1) {
-                    setNotification({ type: 'error', msg: `У вас немає карти ${trade.wantCard}!` });
-                    await updateDoc(gameRef, { activeTrade: null });
-                    return;
-                }
-                try {
-                    await runTransaction(db, async (transaction) => {
-                        const sfDoc = await transaction.get(gameRef);
-                        const gd = sfDoc.data();
-                        if (!gd.activeTrade || gd.activeTrade.status !== 'pending') throw "Обмін вже неактуальний";
-                        const sender = gd.players.find(p => p.uid === trade.fromUid);
-                        const receiver = gd.players[myIndex];
-                        
-                        const senderCardIdx = sender.hand.indexOf(trade.giveCard);
-                        if (senderCardIdx === -1) throw "У відправника зникла карта";
-                        sender.hand.splice(senderCardIdx, 1); sender.hand.push(trade.wantCard);
-
-                        const receiverCardIdx = receiver.hand.indexOf(trade.wantCard);
-                        if (receiverCardIdx === -1) throw "У вас зникла карта";
-                        receiver.hand.splice(receiverCardIdx, 1); receiver.hand.push(trade.giveCard);
-
-                        transaction.update(gameRef, {
-                        players: gd.players, activeTrade: null,
-                        logs: arrayUnion({ text: `Обмін успішний: ${trade.giveCard} ↔ ${trade.wantCard}`, time: Date.now() })
-                        });
-                    });
-                } catch(e) {
-                    setNotification({ type: 'error', msg: e.toString() });
-                }
+                await updateDoc(ref, { players, market, moleculeDeck: molDeck, logs: arrayUnion({ text: `${p.name} синтезував ${mol.name} (+${mol.vp})`, time: Date.now() }) });
+                if (p.score >= 50) await updateDoc(ref, { status: 'finished' });
             };
 
             const endTurn = async () => {
-                if (myPlayer.hand.length > 10) {
-                    setNotification({ type: 'error', msg: 'Більше 10 карт! Скиньте зайве.' }); return;
+                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId);
+                await updateDoc(ref, { turnIndex: (gameData.turnIndex + 1) % gameData.players.length, turnPhase: 'draw', logs: arrayUnion({ text: `Хід перейшов до наступного гравця`, time: Date.now() }) });
+            };
+
+            const handleTradeRequest = async (targetUid) => {
+                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId);
+                const giveCards = tradeOffer.giveIdxs.map(i => myPlayer.hand[i]);
+                await updateDoc(ref, { 
+                    activeTrade: { fromUid: user.uid, fromName: myPlayer.name, targetUid, giveCards, wantEl: tradeOffer.wantEl, status: 'pending' },
+                    logs: arrayUnion({ text: `${myPlayer.name} запропонував обмін`, time: Date.now() })
+                });
+                setTradeMode(false); setTradeStep(0); setSelected([]);
+            };
+
+            const respondTrade = async (accept) => {
+                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId);
+                const trade = gameData.activeTrade;
+                if (!accept) {
+                    // ТУТ ВИПРАВЛЕНО: Використовуємо trade.fromName замість ID
+                    await updateDoc(ref, { activeTrade: null, logs: arrayUnion({ text: `${myPlayer.name} відхилив обмін від ${trade.fromName}`, time: Date.now() }) });
+                    return;
                 }
-                const nextIndex = (gameData.turnIndex + 1) % gameData.players.length;
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId), {
-                    turnIndex: nextIndex, turnPhase: 'draw', activeTrade: null,
-                    logs: arrayUnion({ text: `Хід переходить до ${gameData.players[nextIndex].name}`, time: Date.now() })
+                // Логіка успішного обміну (спрощено)
+                await runTransaction(db, async (t) => {
+                    const s = await t.get(ref);
+                    const d = s.data();
+                    const sender = d.players.find(p => p.uid === trade.fromUid);
+                    const receiver = d.players.find(p => p.uid === user.uid);
+                    
+                    trade.giveCards.forEach(c => sender.hand.splice(sender.hand.indexOf(c), 1));
+                    receiver.hand.push(...trade.giveCards);
+                    
+                    receiver.hand.splice(receiver.hand.indexOf(trade.wantEl), 1);
+                    sender.hand.push(trade.wantEl);
+                    
+                    t.update(ref, { players: d.players, activeTrade: null, logs: arrayUnion({ text: `Обмін успішно завершено!`, time: Date.now() }) });
                 });
             };
 
-            const discardSelected = async () => {
-                if (selectedCards.length === 0) return;
-                const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId);
-                let newHand = [...myPlayer.hand];
-                const discarded = [];
-                selectedCards.sort((a,b) => b-a).forEach(idx => { discarded.push(newHand[idx]); newHand.splice(idx, 1); });
-                const updatedPlayers = [...gameData.players];
-                updatedPlayers[myIndex].hand = newHand;
-                await updateDoc(gameRef, {
-                    players: updatedPlayers, discardPile: [...gameData.discardPile, ...discarded],
-                    logs: arrayUnion({ text: `${myPlayer.name} скинув ${discarded.length} карт`, time: Date.now() })
-                });
-                setSelectedCards([]);
-            };
-
-            const toggleSelectCard = (originalIdx) => {
-                if (selectedCards.includes(originalIdx)) {
-                    setSelectedCards(selectedCards.filter(i => i !== originalIdx));
-                } else {
-                    setSelectedCards([...selectedCards, originalIdx]);
-                }
-            };
-
-            // --- RENDER ---
-
-            if (!user && !gameId) {
-                if (!app) return <div className="h-screen flex items-center justify-center text-red-500 font-bold p-4 text-center">Firebase не налаштовано. Відкрийте код файлу і додайте конфігурацію.</div>
-                return <div className="h-screen flex items-center justify-center gap-2 text-gray-500 font-bold"><Loader2 className="animate-spin"/> Завантаження...</div>;
-            }
-
-            if (!gameId || !gameData) {
-                // LOBBY
-                return (
-                    <div className="min-h-screen bg-gradient-to-br from-[#1a1a1a] to-[#2d3748] flex items-center justify-center p-4 font-sans">
-                        <div className="bg-white max-w-md w-full rounded-xl shadow-2xl overflow-hidden p-6 sm:p-8 space-y-6 animate-in zoom-in duration-300">
-                        <div className="text-center">
-                            <h1 className="text-3xl sm:text-4xl font-black text-[#006400] tracking-wider mb-1">СИНТЕЗ</h1>
-                            <p className="text-gray-400 text-xs sm:text-sm">Хімічна стратегія</p>
-                        </div>
-                        <input type="text" value={playerName} onChange={e=>setPlayerName(e.target.value)} className="w-full border-2 border-gray-200 p-3 rounded-lg focus:border-green-600 outline-none" placeholder="Ваше ім'я"/>
-                        <button onClick={createGame} className="w-full bg-green-700 hover:bg-green-800 text-white p-3 rounded-lg font-bold transition-all shadow-lg flex items-center justify-center gap-2">
-                            <Atom size={20}/> Створити Гру
-                        </button>
-                        <div className="flex items-center gap-2">
-                            <div className="h-px bg-gray-200 flex-grow"></div>
-                            <span className="text-gray-400 text-[10px] uppercase">або</span>
-                            <div className="h-px bg-gray-200 flex-grow"></div>
-                        </div>
+            // --- UI ---
+            if (!gameId) return (
+                <div className="min-h-screen flex items-center justify-center p-4 bg-slate-900">
+                    <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full animate-fade-in">
+                        <h1 className="text-4xl font-black text-green-800 text-center mb-6 tracking-tighter">СИНТЕЗ</h1>
+                        <input value={playerName} onChange={e=>setPlayerName(e.target.value)} placeholder="Ваше ім'я" className="w-full border-2 p-3 rounded-xl mb-4 focus:border-green-500 outline-none font-bold" />
+                        <button onClick={createGame} className="w-full bg-green-700 text-white p-4 rounded-xl font-bold mb-4 shadow-lg flex items-center justify-center gap-2 hover:bg-green-800"><Atom/> Створити гру</button>
                         <div className="flex gap-2">
-                            <input type="text" value={targetGameId} onChange={e=>setTargetGameId(e.target.value)} className="flex-grow border-2 border-gray-200 p-3 rounded-lg uppercase tracking-widest font-mono text-sm" placeholder="КОД"/>
-                            <button onClick={()=>joinGame(targetGameId)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 rounded-lg font-bold shadow-lg text-sm sm:text-base">Увійти</button>
-                        </div>
-                        {notification && <div className="bg-red-50 text-red-600 p-3 rounded text-center text-xs sm:text-sm border border-red-100">{notification.msg}</div>}
+                            <input value={targetId} onChange={e=>setTargetId(e.target.value)} placeholder="Код" className="flex-grow border-2 p-3 rounded-xl uppercase font-mono" />
+                            <button onClick={joinGame} className="bg-blue-600 text-white px-6 rounded-xl font-bold hover:bg-blue-700">Увійти</button>
                         </div>
                     </div>
-                );
-            }
+                </div>
+            );
 
-            if (gameData.status === 'waiting') {
-                return (
-                    <div className="min-h-screen bg-[#f7f7f7] flex flex-col items-center justify-center p-4">
-                        <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-xl w-full max-w-lg text-center border-t-8 border-[#006400]">
-                        <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-[#006400] font-serif">Кімната: {gameId}</h2>
-                        <div className="bg-gray-50 rounded-xl p-4 mb-6">
-                            <h3 className="text-xs uppercase text-gray-400 font-bold mb-3 tracking-widest">Гравці в очікуванні</h3>
-                            <div className="space-y-2">
-                            {gameData.players.map((p,i) => (
-                                <div key={i} className="flex items-center gap-3 p-2 bg-white border border-gray-100 rounded-lg shadow-sm">
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-green-600 text-white flex items-center justify-center font-bold text-sm">{p.name[0]}</div>
-                                <span className="font-bold text-gray-700 text-sm">{p.name}</span>
-                                {i===0 && <Crown size={16} className="text-yellow-500 ml-auto"/>}
+            if (gameData?.status === 'waiting') return (
+                <div className="min-h-screen flex flex-col items-center justify-center bg-slate-100 p-6">
+                    <div className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-lg border-t-8 border-green-700">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold text-green-800">Кімната: <span className="font-mono">{gameId}</span></h2>
+                            <button onClick={copyRoomCode} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ClipboardCopy size={20}/></button>
+                        </div>
+                        <div className="space-y-3 mb-8">
+                            {gameData.players.map((p, i) => (
+                                <div key={i} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                    <div className="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center font-bold">{p.name[0]}</div>
+                                    <span className="font-bold flex-grow">{p.name}</span>
+                                    {i === 0 && <Crown className="text-yellow-500" size={20}/>}
                                 </div>
                             ))}
-                            {[...Array(4 - gameData.players.length)].map((_, i) => (
-                                <div key={`empty-${i}`} className="p-2 border border-dashed border-gray-300 rounded-lg text-gray-400 text-xs sm:text-sm flex items-center justify-center gap-2">
-                                <Loader2 size={14} className="animate-spin"/> Очікування гравця...
-                                </div>
-                            ))}
-                            </div>
                         </div>
-                        {isHost ? (
-                            <button onClick={startGame} className="w-full bg-[#006400] text-[#fceeb5] py-4 rounded-xl font-bold text-lg shadow-xl hover:scale-[1.02] transition-transform flex items-center justify-center gap-2">
-                                <Play fill="currentColor"/> Розпочати
-                            </button>
-                        ) : <p className="text-gray-500 animate-pulse text-sm">Чекаємо організатора...</p>}
-                        </div>
+                        {myIndex === 0 ? <button onClick={startGame} className="w-full bg-green-700 text-white py-4 rounded-2xl font-bold text-xl shadow-lg">Розпочати гру</button> : <div className="text-center text-gray-400 animate-pulse">Очікування хоста...</div>}
                     </div>
-                );
-            }
-
-            if (gameData.status === 'finished') {
-                const winner = gameData.players.reduce((p, c) => (p.score > c.score) ? p : c);
-                return (
-                    <div className="h-screen bg-gray-900 flex flex-col items-center justify-center text-white p-4 text-center">
-                        <Crown size={64} className="text-yellow-400 mb-6 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]"/>
-                        <h1 className="text-4xl sm:text-6xl font-black mb-4 font-serif">{winner.name}</h1>
-                        <p className="text-lg sm:text-2xl text-gray-300 mb-8">Великий Майстер Синтезу ({winner.score} VP)</p>
-                        <button onClick={()=>window.location.reload()} className="px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200">До Головного Меню</button>
-                    </div>
-                );
-            }
+                </div>
+            );
 
             return (
-                <div className="h-screen bg-[#e8e8e8] flex flex-col overflow-hidden font-sans">
-                    {/* HEADER */}
-                    <header className="bg-white border-b px-3 sm:px-4 py-2 flex justify-between items-center shadow-sm z-30 shrink-0">
-                        <div className="flex items-center gap-2 sm:gap-3">
-                        <div className="bg-[#006400] text-[#fceeb5] px-2 sm:px-3 py-1 rounded font-bold font-serif shadow-sm tracking-wider text-xs sm:text-sm">{gameId}</div>
-                        <div className="text-[10px] sm:text-xs text-gray-400 hidden sm:block">Колода: {gameData.elementDeck.length} | Молекули: {gameData.moleculeDeck.length}</div>
+                <div className="h-screen flex flex-col md:flex-row overflow-hidden">
+                    {/* Sidebar - ТУТ ДОДАНО ПОКРАЩЕННЯ ДЛЯ НОУТБУКІВ */}
+                    <aside className="w-full md:w-64 bg-white border-r flex flex-col z-20 shadow-lg shrink-0">
+                        <div className="p-4 bg-slate-800 text-white flex justify-between items-center">
+                            <span className="font-black tracking-tighter text-xl">СИНТЕЗ</span>
+                            <div className="text-[10px] bg-white/20 px-2 py-1 rounded flex items-center gap-1 cursor-pointer" onClick={copyRoomCode}>
+                                {gameId} <ClipboardCopy size={10}/>
+                            </div>
                         </div>
-                        
-                        <div className="flex items-center gap-2">
-                            {/* Mobile Menu Toggle */}
-                            <button 
-                                className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-full"
-                                onClick={() => setMobileMenuOpen(true)}
-                            >
-                                <Menu size={20} />
-                            </button>
-
-                            <div className={`px-3 sm:px-4 py-1.5 rounded-full font-bold text-[10px] sm:text-sm transition-colors ${isMyTurn ? 'bg-green-100 text-green-800 ring-2 ring-green-500 shadow-lg scale-105' : 'bg-gray-100 text-gray-500'}`}>
-                            {isMyTurn ? "ВАШ ХІД" : `Хід: ${gameData.players[gameData.turnIndex].name}`}
-                            </div>
-                            
-                            <button className="text-gray-400 hover:text-red-500 hidden sm:block" onClick={()=>setGameId('')}><LogOut size={20}/></button>
-                        </div>
-                    </header>
-
-                    {/* MOBILE MENU MODAL */}
-                    {isMobileMenuOpen && (
-                        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center pointer-events-none">
-                        <div className="absolute inset-0 bg-black/40 pointer-events-auto" onClick={() => setMobileMenuOpen(false)}></div>
-                        <div className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl shadow-2xl p-4 pointer-events-auto animate-in slide-in-from-bottom-10 max-h-[80vh] flex flex-col">
-                            <div className="flex justify-between items-center mb-4 border-b pb-2">
-                                <h2 className="font-bold text-lg text-[#006400]">Інфо про гру</h2>
-                                <button onClick={() => setMobileMenuOpen(false)} className="p-1 bg-gray-100 rounded-full"><X size={20}/></button>
-                            </div>
-                            
-                            <div className="flex gap-2 mb-4 bg-gray-100 p-1 rounded-lg">
-                                <button 
-                                    onClick={() => setMobileTab('players')}
-                                    className={`flex-1 py-2 rounded-md text-sm font-bold transition-all ${mobileTab === 'players' ? 'bg-white shadow text-[#006400]' : 'text-gray-500'}`}
-                                >
-                                    Гравці
-                                </button>
-                                <button 
-                                    onClick={() => setMobileTab('logs')}
-                                    className={`flex-1 py-2 rounded-md text-sm font-bold transition-all ${mobileTab === 'logs' ? 'bg-white shadow text-[#006400]' : 'text-gray-500'}`}
-                                >
-                                    Події
-                                </button>
-                            </div>
-
-                            <div className="flex-grow overflow-y-auto min-h-[200px]">
-                                {mobileTab === 'players' ? (
-                                    <div className="space-y-2">
-                                        {gameData.players.map((p, idx) => (
-                                            <div key={p.uid} className={`flex items-center justify-between p-3 rounded-xl ${gameData.turnIndex === idx ? 'bg-green-50 border border-green-200' : 'bg-gray-50'}`}>
-                                                <div className="flex items-center gap-3">
-                                                <div className={`w-2 h-2 rounded-full ${gameData.turnIndex === idx ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                                                <div className="flex flex-col">
-                                                    <span className="font-bold text-sm">{p.name} {p.uid === user.uid && '(Ви)'}</span>
-                                                    <span className="text-xs text-gray-400">Карт: {p.hand.length} | Мол: {p.molecules.length}</span>
-                                                </div>
-                                                </div>
-                                                <div className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-md font-bold">{p.score} VP</div>
-                                            </div>
-                                        ))}
+                        <div className="p-4 space-y-2 overflow-y-auto">
+                            {gameData?.players.map((p, i) => (
+                                <div key={p.uid} className={`p-3 rounded-xl border-2 transition-all ${gameData.turnIndex === i ? 'border-green-500 bg-green-50 shadow-md scale-105' : 'border-transparent bg-slate-50'}`}>
+                                    <div className="flex justify-between items-center">
+                                        <span className="font-bold text-sm truncate max-w-[100px]">{p.name}</span>
+                                        <span className="bg-yellow-400 text-black px-2 py-0.5 rounded-lg text-xs font-black">{p.score} VP</span>
                                     </div>
-                                ) : (
-                                    <div className="space-y-2 text-xs font-mono text-gray-600">
-                                        {gameData.logs.slice(-20).reverse().map((l,i)=>(
-                                            <div key={i} className="border-l-2 border-gray-200 pl-2 py-1">
-                                                <span className="opacity-50 text-[10px] mr-2">{new Date(l.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
-                                                {l.text}
-                                            </div>
-                                        ))}
+                                    {/* Детальна інфа для ПК */}
+                                    <div className="flex justify-between mt-2">
+                                        <div className="flex items-center gap-1 text-[10px] text-gray-500 font-bold uppercase">
+                                            <Layers size={10}/> Карт: <span className="text-blue-600 text-xs">{p.hand.length}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1 text-[10px] text-gray-500 font-bold uppercase">
+                                            <FlaskConical size={10}/> Мол: <span className="text-green-700 text-xs">{p.molecules.length}</span>
+                                        </div>
                                     </div>
-                                )}
-                            </div>
-                            <div className="mt-4 pt-4 border-t text-center text-xs text-gray-400">
-                                Колода: {gameData.elementDeck.length} | Ринок: {gameData.market.length}
+                                </div>
+                            ))}
+                        </div>
+                        <div className="mt-auto p-4 border-t h-40 overflow-hidden flex flex-col">
+                            <h4 className="text-[10px] font-black text-gray-400 uppercase mb-2">Журнал</h4>
+                            <div className="flex-grow overflow-y-auto custom-scrollbar text-[10px] font-mono space-y-1">
+                                {gameData?.logs.slice(-20).reverse().map((l, i) => <div key={i} className="border-l-2 border-slate-300 pl-2">{l.text}</div>)}
                             </div>
                         </div>
+                    </aside>
+
+                    {/* Main Arena */}
+                    <main className="flex-grow flex flex-col relative overflow-hidden">
+                        <section className="flex-grow p-4 bg-slate-200 overflow-y-auto pb-40">
+                            <div className="max-w-4xl mx-auto flex flex-wrap justify-center gap-4">
+                                {gameData?.market.map(m => (
+                                    <MoleculeCard key={m.uniqueId} mol={m} canBuy={isMyTurn && gameData.turnPhase === 'action'} onBuy={synthesize} />
+                                ))}
+                            </div>
+                        </section>
+
+                        {/* Trade Overlay */}
+                        {gameData?.activeTrade?.targetUid === user?.uid && (
+                            <div className="absolute inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+                                <div className="bg-white p-6 rounded-2xl shadow-2xl max-w-sm w-full text-center animate-fade-in">
+                                    <h3 className="text-xl font-bold mb-4">Пропозиція від {gameData.activeTrade.fromName}</h3>
+                                    <div className="flex items-center justify-around bg-slate-50 p-4 rounded-xl mb-6">
+                                        <div className="text-blue-600 font-bold">{gameData.activeTrade.giveCards.join(', ')}</div>
+                                        <ArrowRightLeft className="text-gray-300"/>
+                                        <div className="text-red-600 font-bold">1x {gameData.activeTrade.wantEl}</div>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button onClick={() => respondTrade(false)} className="flex-1 bg-red-100 text-red-600 py-3 rounded-xl font-bold">Відмовити</button>
+                                        <button onClick={() => respondTrade(true)} className="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold">Прийняти</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Hand & Controls */}
+                        <footer className="bg-white border-t p-4 z-40 shadow-2xl">
+                            <div className="max-w-5xl mx-auto">
+                                <div className="flex overflow-x-auto scrollbar-hide h-40 sm:h-52 items-end mb-4 px-10">
+                                    {myPlayer?.hand.map((c, i) => (
+                                        <ElementCard key={i} type={c} overlap={true} selected={selected.includes(i)} onClick={() => {
+                                            if (selected.includes(i)) setSelected(selected.filter(x => x !== i));
+                                            else setSelected([...selected, i]);
+                                        }} />
+                                    ))}
+                                </div>
+                                
+                                <div className="flex justify-center gap-3">
+                                    {isMyTurn && gameData.turnPhase === 'draw' && (
+                                        <button onClick={drawCards} className="bg-blue-600 text-white px-10 py-3 rounded-full font-bold shadow-lg hover:bg-blue-700 animate-bounce">Взяти 2 ресурси</button>
+                                    )}
+                                    {isMyTurn && gameData.turnPhase === 'action' && (
+                                        <>
+                                            <button onClick={() => { setTradeMode(true); setTradeStep(1); setTradeOffer({ ...tradeOffer, giveIdxs: selected }); }} className="bg-indigo-100 text-indigo-700 px-6 py-3 rounded-full font-bold border border-indigo-200">Обмін</button>
+                                            <button onClick={endTurn} className="bg-green-600 text-white px-10 py-3 rounded-full font-bold shadow-lg">Завершити хід</button>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        </footer>
+                    </main>
+
+                    {/* Trade Step Modal */}
+                    {tradeMode && tradeStep === 1 && (
+                        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                            <div className="bg-white p-6 rounded-2xl shadow-xl w-full max-w-sm">
+                                <h3 className="font-bold mb-4">Який атом ви хочете?</h3>
+                                <div className="grid grid-cols-5 gap-2">
+                                    {Object.keys(ELEMENTS).map(el => (
+                                        <div key={el} onClick={() => { setTradeOffer({ ...tradeOffer, wantEl: el }); setTradeStep(2); }} className={`p-2 border rounded cursor-pointer text-center font-bold ${ELEMENTS[el].color}`}>{el}</div>
+                                    ))}
+                                </div>
+                                <button onClick={() => setTradeMode(false)} className="w-full mt-4 text-gray-400">Скасувати</button>
+                            </div>
+                        </div>
+                    )}
+                    {tradeMode && tradeStep === 2 && (
+                        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                            <div className="bg-white p-6 rounded-2xl shadow-xl w-full max-w-sm">
+                                <h3 className="font-bold mb-4">Кому запропонувати?</h3>
+                                <div className="space-y-2">
+                                    {gameData.players.map((p, i) => i !== myIndex && (
+                                        <button key={p.uid} onClick={() => handleTradeRequest(p.uid)} className="w-full p-3 bg-slate-50 rounded-xl font-bold hover:bg-slate-100">{p.name}</button>
+                                    ))}
+                                </div>
+                                <button onClick={() => setTradeMode(false)} className="w-full mt-4 text-gray-400">Скасувати</button>
+                            </div>
                         </div>
                     )}
 
-                    {/* MAIN AREA */}
-                    <main className="flex-grow flex overflow-hidden relative">
-                        
-                        {/* Trade Overlay (Receiver) */}
-                        {gameData.activeTrade && gameData.activeTrade.targetUid === user.uid && (
-                            <div className="absolute inset-0 bg-black/60 z-50 flex items-center justify-center backdrop-blur-sm p-4">
-                                <div className="bg-white p-6 rounded-2xl shadow-2xl max-w-md w-full animate-in zoom-in duration-200">
-                                    <h3 className="text-xl font-bold mb-4 text-center text-gray-800">Пропозиція обміну!</h3>
-                                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex items-center justify-between mb-6">
-                                        <div className="text-center">
-                                            <div className="text-[10px] sm:text-xs text-gray-400 uppercase font-bold mb-1">{gameData.activeTrade.fromName} дає</div>
-                                            <div className="font-black text-2xl sm:text-3xl text-blue-600">{gameData.activeTrade.giveCard}</div>
-                                        </div>
-                                        <RefreshCcw className="text-gray-300" />
-                                        <div className="text-center">
-                                            <div className="text-[10px] sm:text-xs text-gray-400 uppercase font-bold mb-1">Хоче</div>
-                                            <div className="font-black text-2xl sm:text-3xl text-green-600">{gameData.activeTrade.wantCard}</div>
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <button onClick={() => respondToTrade(false)} className="py-3 bg-red-50 text-red-600 rounded-lg font-bold hover:bg-red-100 transition-colors text-sm">Відхилити</button>
-                                        <button onClick={() => respondToTrade(true)} className="py-3 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 shadow-lg shadow-green-200 transition-all text-sm">Прийняти</button>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Trade Player Selector */}
-                        {tradeMode && tradeStep === 2 && (
-                            <div className="absolute inset-0 bg-black/40 z-40 flex items-center justify-center p-4 backdrop-blur-sm">
-                                <div className="bg-white p-6 rounded-2xl shadow-xl w-full max-w-sm animate-in fade-in slide-in-from-bottom-4">
-                                <div className="flex justify-between items-center mb-4">
-                                    <h3 className="font-bold text-lg">Оберіть партнера</h3>
-                                    <button onClick={()=>setTradeMode(false)} className="bg-gray-100 p-1 rounded-full hover:bg-gray-200"><X size={18}/></button>
-                                </div>
-                                <div className="space-y-2">
-                                    {gameData.players.map(p => {
-                                        if (p.uid === user.uid) return null;
-                                        return (
-                                            <button 
-                                                key={p.uid} 
-                                                onClick={() => sendTradeOffer(p.uid)}
-                                                className="w-full p-4 bg-gray-50 hover:bg-blue-50 hover:border-blue-200 border border-transparent text-gray-700 font-bold rounded-xl flex items-center justify-between transition-all group"
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-sm">{p.name[0]}</div>
-                                                    <span>{p.name}</span>
-                                                </div>
-                                                <ArrowRightLeft size={16} className="text-gray-300 group-hover:text-blue-500"/>
-                                            </button>
-                                        )
-                                    })}
-                                </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Desktop Sidebar */}
-                        <aside className="w-64 bg-white border-r hidden lg:flex flex-col shadow-lg z-20">
-                            <div className="p-5 border-b bg-gray-50">
-                                <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Таблиця лідерів</h3>
-                                {gameData.players.map((p, idx) => (
-                                    <div key={p.uid} className={`flex items-center justify-between p-3 rounded-xl mb-2 transition-all ${gameData.turnIndex === idx ? 'bg-white border-2 border-green-500 shadow-md transform scale-105' : 'bg-gray-100 border border-transparent'}`}>
-                                        <div className="flex items-center gap-2 overflow-hidden">
-                                        <div className={`w-2 h-2 rounded-full ${gameData.turnIndex === idx ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`}></div>
-                                        <span className="font-bold text-sm truncate">{p.name}</span>
-                                        </div>
-                                        <div className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-md font-bold shadow-sm">{p.score} VP</div>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="flex-grow flex flex-col p-4 overflow-hidden bg-white">
-                                <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Хроніка</h3>
-                                <div className="flex-grow overflow-y-auto text-xs space-y-3 font-mono text-gray-600 pr-2 custom-scrollbar">
-                                    {gameData.logs.slice(-15).reverse().map((l,i)=>(
-                                        <div key={i} className="border-l-2 border-gray-200 pl-2 py-1 opacity-80 hover:opacity-100 hover:border-green-400 transition-colors">
-                                            <span className="opacity-50 text-[10px] block">{new Date(l.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
-                                            {l.text}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </aside>
-
-                        {/* Market Area */}
-                        <section className="flex-grow bg-[#dcdcdc] p-2 sm:p-4 overflow-y-auto relative">
-                            <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-5 bg-[radial-gradient(#006400_1px,transparent_1px)] [background-size:16px_16px]"></div>
-                            
-                            <div className="max-w-5xl mx-auto pb-40 sm:pb-32">
-                            <div className="flex items-center gap-2 mb-4 sm:mb-6 opacity-70 px-2">
-                                <LayoutGrid size={18} />
-                                <span className="font-bold text-xs sm:text-sm uppercase tracking-widest">Арена Молекул ({gameData.market.length})</span>
-                            </div>
-                            
-                            <div className="flex flex-wrap justify-center gap-2 sm:gap-6">
-                                {gameData.market.map(mol => (
-                                    <MoleculeCard 
-                                        key={mol.uniqueId} 
-                                        mol={mol} 
-                                        canBuy={isMyTurn && gameData.turnPhase === 'action' && checkRecipe(myPlayer.hand, mol.req)} 
-                                        onBuy={synthesize} 
-                                    />
-                                ))}
-                                {[...Array(4 - gameData.market.length)].map((_, i) => (
-                                    <div key={`placeholder-${i}`} className="w-[45%] sm:w-36 h-[160px] sm:h-[180px] rounded-xl border-2 border-dashed border-gray-400 flex items-center justify-center opacity-30">
-                                        <FlaskConical size={32}/>
-                                    </div>
-                                ))}
-                            </div>
-                            </div>
-                        </section>
-                    </main>
-
-                    {/* FOOTER */}
-                    <footer className="bg-white border-t p-2 z-40 relative shadow-[0_-5px_25px_rgba(0,0,0,0.1)] pb-safe">
-                        <div className="max-w-6xl mx-auto">
-                        {/* Notifications/Hints */}
-                        {tradeMode && tradeStep === 0 && <div className="text-center text-blue-600 font-bold text-xs sm:text-sm mb-2 animate-pulse bg-blue-50 py-1 rounded-full mx-auto w-max px-4">Оберіть карту для обміну</div>}
-                        {selectedCards.length > 0 && !tradeMode && <div className="text-center text-gray-500 text-[10px] sm:text-xs mb-2 bg-gray-100 py-0.5 rounded-full mx-auto w-max px-3">Обрано: {selectedCards.length}</div>}
-
-                        {/* HAND */}
-                        <div className="w-full overflow-x-auto h-42 sm:h-52 mb-2 pb-4 px-2 sm:px-4 scrollbar-hide flex items-end">
-                            <div className="flex items-end mx-auto min-w-min pl-6 sm:pl-10 pr-6">
-                                {sortedHandMap.map(({ card, originalIdx }, i) => (
-                                    <ElementCard 
-                                        key={`${originalIdx}-${i}`}
-                                        type={card}
-                                        overlap={true} 
-                                        style={{ zIndex: selectedCards.includes(originalIdx) ? 50 : i, transformOrigin: 'bottom center', transform: selectedCards.includes(originalIdx) ? 'translateY(-15px)' : `rotate(${(i - sortedHandMap.length/2) * 2}deg)` }}
-                                        selected={selectedCards.includes(originalIdx)}
-                                        onClick={() => {
-                                            if (tradeMode && tradeStep === 0) {
-                                                setSelectedCards([originalIdx]);
-                                                setTimeout(() => initPlayerTrade(), 150);
-                                            } else {
-                                                toggleSelectCard(originalIdx);
-                                            }
-                                        }}
-                                    />
-                                ))}
-                                {sortedHandMap.length === 0 && (
-                                    <div className="text-gray-400 text-xs sm:text-sm font-bold border-2 border-dashed border-gray-300 rounded-xl w-20 h-32 sm:w-24 sm:h-36 flex items-center justify-center flex-shrink-0">
-                                        Пусто
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                        
-                        {/* CONTROLS */}
-                        <div className="flex gap-2 sm:gap-3 justify-start sm:justify-center pb-2 overflow-x-auto items-center px-1 scrollbar-hide">
-                            {isMyTurn && gameData.turnPhase === 'draw' && (
-                                <button onClick={() => drawCards(2)} className="bg-gradient-to-r from-blue-600 to-blue-500 text-white px-6 sm:px-8 py-2 sm:py-3 rounded-full font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center gap-2 text-sm sm:text-base whitespace-nowrap mx-auto">
-                                    <Copy size={18}/> Взяти ресурси
-                                </button>
-                            )}
-
-                            {isMyTurn && gameData.turnPhase === 'action' && !tradeMode && (
-                                <div className="flex gap-2 mx-auto">
-                                    <button 
-                                        onClick={startTrade3to1} 
-                                        disabled={selectedCards.length !== 3} 
-                                        className="bg-yellow-50 text-yellow-700 border border-yellow-200 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-1 sm:gap-2 hover:bg-yellow-100 transition-colors disabled:opacity-50 disabled:grayscale whitespace-nowrap"
-                                    >
-                                        <RefreshCcw size={14}/> <span className="hidden sm:inline">Обмін</span> 3:1
-                                    </button>
-                                    
-                                    <button 
-                                        onClick={() => { setSelectedCards([]); setTradeMode(true); setTradeStep(0); }} 
-                                        className="bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-1 sm:gap-2 hover:bg-indigo-100 transition-colors whitespace-nowrap"
-                                    >
-                                        <Users size={14}/> <span className="hidden sm:inline">Обмін</span> Гравці
-                                    </button>
-
-                                    <div className="w-px h-6 sm:h-8 bg-gray-300 mx-1 sm:mx-2"></div>
-
-                                    {myPlayer.hand.length > 10 ? (
-                                        <button onClick={discardSelected} className="bg-red-500 text-white px-4 sm:px-8 py-2 sm:py-3 rounded-full font-bold shadow-lg animate-bounce flex items-center gap-2 text-xs sm:text-sm whitespace-nowrap">
-                                        <AlertTriangle size={16}/> Скинути ({selectedCards.length})
-                                        </button>
-                                    ) : (
-                                        <button onClick={endTurn} className="bg-gradient-to-r from-green-600 to-green-500 text-white px-4 sm:px-8 py-2 sm:py-3 rounded-full font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center gap-2 text-xs sm:text-sm whitespace-nowrap">
-                                        <Check size={16}/> <span className="hidden sm:inline">Завершити</span> Хід
-                                        </button>
-                                    )}
-                                </div>
-                            )}
-                            
-                            {tradeMode && (
-                                <button onClick={() => { setTradeMode(false); setTradeStep(0); setSelectedCards([]); }} className="bg-gray-200 text-gray-600 px-6 py-2 rounded-full font-bold text-xs sm:text-sm hover:bg-gray-300 mx-auto">
-                                    Скасувати
-                                </button>
-                            )}
-                        </div>
-                        </div>
-                    </footer>
-                    
-                    {/* MODALS */}
-                    <ElementSelectorModal isOpen={is3to1ModalOpen} onClose={() => set3to1ModalOpen(false)} onSelect={confirmTrade3to1} title="Отримайте ресурс" />
-                    <ElementSelectorModal isOpen={tradeMode && tradeStep === 1} onClose={() => setTradeMode(false)} onSelect={handleTradeStepSelection} title="Що ви хочете отримати?" />
-
                     {notification && (
-                        <div className={`fixed top-16 sm:top-24 left-1/2 -translate-x-1/2 px-4 sm:px-6 py-2 sm:py-3 rounded-xl shadow-2xl text-white font-bold z-[100] animate-in slide-in-from-top-4 text-xs sm:text-sm whitespace-nowrap ${notification.type==='error'?'bg-red-500':'bg-green-600'}`}>
+                        <div className={`fixed bottom-10 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full text-white font-bold shadow-2xl z-[100] animate-fade-in ${notification.type === 'error' ? 'bg-red-500' : 'bg-green-600'}`}>
                             {notification.msg}
-                            {setTimeout(()=>setNotification(null), 3000) && ""}
                         </div>
                     )}
                 </div>
             );
         };
 
-        const root = createRoot(document.getElementById('root'));
-        root.render(<SynthesisGame />);
+        createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
 </html>
