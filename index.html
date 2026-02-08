@@ -5,42 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>СИНТЕЗ - Alchemy Grand Master</title>
     
-    <!-- Tailwind CSS (для розмітки) -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- React & Babel (для логіки) -->
+    <!-- React & Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Шрифти (Playfair для заголовків, Cormorant для текстів) -->
+    <!-- Шрифти -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Cormorant+Garamond:wght@600;700&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
 
     <style>
         /* =========================================
-           ГЛОБАЛЬНІ СТИЛІ ТА ФОНИ
+           1. ГЛОБАЛЬНІ НАЛАШТУВАННЯ ТА ФОНИ
            ========================================= */
         
-        .scrollbar-hide::-webkit-scrollbar { 
-            display: none; 
-        }
-        
-        .scrollbar-hide { 
-            -ms-overflow-style: none; 
-            scrollbar-width: none; 
-        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         
         body {
             font-family: 'Cormorant Garamond', serif;
-            background-color: #0d1f14; /* Глибокий зелений */
-            /* Тонка сітка на фоні */
+            background-color: #0d1f14; /* Глибокий алхімічний зелений */
             background-image: radial-gradient(#1a3c28 1px, transparent 1px);
-            background-size: 20px 20px;
+            background-size: 24px 24px;
             color: #ecfdf5;
             overflow: hidden;
             -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
 
         /* =========================================
-           ПАЛІТРА КОЛЬОРІВ ЕЛЕМЕНТІВ (CSS Variables)
+           2. ЗМІННІ КОЛЬОРІВ (Хімічні Елементи)
            ========================================= */
         :root {
             /* ОКСИГЕН (Червоний) */
@@ -85,7 +79,7 @@
         }
 
         /* =========================================
-           СТИЛІ КАРТКИ ЕЛЕМЕНТА
+           3. ДЕТАЛІЗОВАНІ СТИЛІ КАРТКИ ЕЛЕМЕНТА
            ========================================= */
         .card-element {
             position: relative;
@@ -93,11 +87,10 @@
             overflow: hidden;
             box-shadow: 2px 4px 10px rgba(0,0,0,0.5);
             transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            background: #fff; /* Fallback */
+            background: #fff;
             border: 1px solid rgba(0,0,0,0.1);
         }
         
-        /* Текстура "зоряний пил" для глибини (без патерну) */
         .card-element .texture {
             position: absolute; 
             inset: 0; 
@@ -107,47 +100,44 @@
             pointer-events: none;
         }
 
-        /* Внутрішня рамка */
         .card-element .card-border-inner {
             position: absolute; 
             top: 4px; left: 4px; right: 4px; bottom: 4px;
-            border: 2px solid rgba(255,255,255,0.5);
+            border: 2px solid rgba(255,255,255,0.6);
             border-radius: 8px; 
             pointer-events: none;
         }
 
-        /* Кутові кружечки */
         .corner-circle {
             position: absolute; 
             width: 24px; height: 24px;
-            background: rgba(255,255,255,0.9);
+            background: rgba(255,255,255,0.95);
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.25);
             font-family: 'Montserrat', sans-serif; 
             font-weight: 800; 
             font-size: 10px;
             z-index: 10;
         }
-        .tl { top: 8px; left: 8px; }
-        .tr { top: 8px; right: 8px; }
-        .bl { bottom: 8px; left: 8px; }
-        .br { bottom: 8px; right: 8px; }
+        .tl { top: 7px; left: 7px; }
+        .tr { top: 7px; right: 7px; }
+        .bl { bottom: 7px; left: 7px; }
+        .br { bottom: 7px; right: 7px; }
 
-        /* Центральне кільце */
         .center-ring {
             position: absolute; 
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 65%; 
+            width: 68%; 
             aspect-ratio: 1/1;
-            background: rgba(255,255,255,0.7);
+            background: rgba(255,255,255,0.8);
             border-radius: 50%;
-            border: 2px solid rgba(255,255,255,0.8);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 2px solid rgba(255,255,255,0.9);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             z-index: 5;
-            backdrop-filter: blur(3px);
+            backdrop-filter: blur(4px);
         }
 
         .symbol-main {
@@ -163,13 +153,13 @@
         }
 
         /* =========================================
-           СТИЛІ КАРТКИ МОЛЕКУЛИ
+           4. ДЕТАЛІЗОВАНІ СТИЛІ КАРТКИ МОЛЕКУЛИ
            ========================================= */
         .card-molecule {
             position: relative;
             background: var(--gold-front);
-            border-radius: 12px;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.5);
+            border-radius: 14px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.6);
             overflow: hidden;
             display: flex; flex-direction: column;
             border: 1px solid #c9b675;
@@ -179,14 +169,14 @@
         .card-molecule .pattern-bg {
             position: absolute; inset: 0;
             background-image: radial-gradient(#d4b062 1px, transparent 1px);
-            background-size: 10px 10px; opacity: 0.2;
+            background-size: 10px 10px; opacity: 0.25;
             pointer-events: none;
         }
 
         .card-molecule .card-border-double {
-            position: absolute; inset: 4px;
+            position: absolute; inset: 5px;
             border: 3px double var(--green-classic);
-            border-radius: 8px; 
+            border-radius: 10px; 
             pointer-events: none; 
             z-index: 2;
         }
@@ -195,69 +185,66 @@
             position: absolute; top: 0; right: 0;
             background: var(--green-classic); color: #fffdf5;
             font-family: 'Montserrat', sans-serif; font-weight: 900;
-            font-size: 0.8rem; padding: 4px 10px;
-            border-bottom-left-radius: 12px;
+            font-size: 0.85rem; padding: 5px 12px;
+            border-bottom-left-radius: 14px;
             border-left: 2px solid #fffdf5; border-bottom: 2px solid #fffdf5;
             z-index: 10; 
-            box-shadow: -2px 2px 5px rgba(0,0,0,0.2);
+            box-shadow: -2px 2px 5px rgba(0,0,0,0.25);
         }
 
         .mol-formula {
-            margin-top: 30px;
+            margin-top: 35px;
             font-family: 'Playfair Display', serif;
-            font-weight: 900; font-size: 1.8rem;
+            font-weight: 900; font-size: 1.9rem;
             color: #1a1a1a; text-align: center;
-            text-shadow: 1px 1px 0px rgba(255,255,255,0.5);
+            text-shadow: 1px 1px 0px rgba(255,255,255,0.6);
             z-index: 5;
             line-height: 1.2;
         }
 
         .mol-names {
-            text-align: center; margin-top: auto; margin-bottom: 12px; z-index: 5;
+            text-align: center; margin-top: auto; margin-bottom: 15px; z-index: 5;
         }
         .mol-name-trivial {
             font-family: 'Montserrat', sans-serif; font-weight: 800;
-            text-transform: uppercase; font-size: 0.65rem; letter-spacing: 0.05em;
+            text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.08em;
             color: #3e2723;
         }
 
         .mol-recipe {
-            background: rgba(0, 100, 0, 0.05);
-            padding: 8px;
-            display: flex; justify-content: center; gap: 4px; flex-wrap: wrap;
+            background: rgba(0, 100, 0, 0.06);
+            padding: 10px;
+            display: flex; justify-content: center; gap: 5px; flex-wrap: wrap;
             border-top: 1px solid rgba(0, 100, 0, 0.15);
             z-index: 5;
-            min-height: 40px;
+            min-height: 45px;
             align-items: center;
         }
         
         .atom-dot {
-            width: 20px; height: 20px; border-radius: 50%;
+            width: 22px; height: 22px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 9px;
-            box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-            border: 1px solid rgba(255,255,255,0.6);
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.7);
         }
 
         /* =========================================
-           АНІМАЦІЇ ТА ОВЕРЛЕЇ
+           5. АНІМАЦІЇ ТА УТИЛІТИ
            ========================================= */
         #error-overlay {
             display: none; position: fixed; inset: 0; background: white; z-index: 9999; padding: 20px; color: red;
         }
         
-        .animate-in {
-            animation: fadeIn 0.3s ease-out forwards;
-        }
+        .animate-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
-    <!-- Блок відображення критичних помилок -->
     <div id="error-overlay">
         <h2 class="text-xl font-bold mb-2">⚠️ Критична помилка:</h2>
         <pre id="error-msg" class="whitespace-pre-wrap font-mono text-xs"></pre>
@@ -277,7 +264,7 @@
         import React, { useState, useEffect, useMemo } from 'https://esm.sh/react@18.2.0';
         import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
         
-        // Імпорт Firebase модулів
+        // Firebase Imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { 
             getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, 
@@ -287,15 +274,13 @@
             getAuth, signInAnonymously, onAuthStateChanged 
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         
-        // Імпорт іконок Lucide
+        // Icon Imports
         import { 
             FlaskConical, ArrowRightLeft, Crown, LogOut, Loader2, X, 
             History, Trash2, RefreshCcw, CheckCircle2, Menu, Plus, Minus, User, Info, Scale, Trophy
         } from 'https://esm.sh/lucide-react@0.263.1';
 
-        // ==========================================
-        // НАЛАШТУВАННЯ FIREBASE
-        // ==========================================
+        // --- CONFIGURATION ---
         const firebaseConfig = {
             apiKey: "AIzaSyAEownlzJ0AqrnAku7Cw208N2DRLQHdD6Y",
             authDomain: "synthesis-game-f9684.firebaseapp.com",
@@ -310,25 +295,22 @@
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
-            console.log("Firebase initialized");
+            console.log("Firebase initialized successfully");
         } catch (e) {
-            console.error("Firebase init error", e);
+            console.error("Firebase initialization failed:", e);
         }
 
         const appId = 'synthesis-game';
         const WINNING_SCORE = 50;
 
-        // ==========================================
-        // БАЗА ДАНИХ ГРИ (ЕЛЕМЕНТИ ТА МОЛЕКУЛИ)
-        // ==========================================
-        
+        // --- DATA DICTIONARIES ---
         const ELEMENTS = {
             'H':  { m: 1,  name: 'Гідроген' },
             'O':  { m: 16, name: 'Оксиген' },
             'C':  { m: 12, name: 'Карбон' },
             'N':  { m: 14, name: 'Нітроген' },
             'Na': { m: 23, name: 'Натрій' },
-            'Cl': { m: 35.5, name: 'Хлор' }, // Єдиний виняток
+            'Cl': { m: 35.5, name: 'Хлор' }, // 35.5 Special Case
             'Ca': { m: 40, name: 'Кальцій' },
             'S':  { m: 32, name: 'Сульфур' },
             'Si': { m: 28, name: 'Силіцій' },
@@ -339,12 +321,10 @@
         };
 
         const MOLECULES_LIST = [
-            // Прості (низька вартість)
             { id: 'h2o',     f: 'H₂O',      name: 'Вода',              vp: 3, count: 6, req: { 'H': 2, 'O': 1 } },
             { id: 'co',      f: 'CO',       name: 'Чадний газ',        vp: 4, count: 4, req: { 'C': 1, 'O': 1 } },
             { id: 'hcl',     f: 'HCl',      name: 'Хлоридна к-та',     vp: 6, count: 3, req: { 'H': 1, 'Cl': 1 } },
             { id: 'cao',     f: 'CaO',      name: 'Негашене вапно',    vp: 4, count: 3, req: { 'Ca': 1, 'O': 1 } },
-            // Середні
             { id: 'co2',     f: 'CO₂',      name: 'Вуглекислий газ',   vp: 5, count: 5, req: { 'C': 1, 'O': 2 } },
             { id: 'nacl',    f: 'NaCl',     name: 'Кухонна сіль',      vp: 8, count: 4, req: { 'Na': 1, 'Cl': 1 } },
             { id: 'naoh',    f: 'NaOH',     name: 'Каустична сода',    vp: 5, count: 3, req: { 'Na': 1, 'O': 1, 'H': 1 } },
@@ -352,7 +332,6 @@
             { id: 'h2o2',    f: 'H₂O₂',     name: 'Перекис водню',     vp: 4, count: 2, req: { 'H': 2, 'O': 2 } },
             { id: 'so2',     f: 'SO₂',      name: 'Сірчистий газ',     vp: 4, count: 2, req: { 'S': 1, 'O': 2 } },
             { id: 'sio2',    f: 'SiO₂',     name: 'Пісок',             vp: 10, count: 2, req: { 'Si': 1, 'O': 2 } },
-            // Складні (висока вартість)
             { id: 'caoh2',   f: 'Ca(OH)₂',  name: 'Гашене вапно',      vp: 7, count: 2, req: { 'Ca': 1, 'O': 2, 'H': 2 } },
             { id: 'h2so4',   f: 'H₂SO₄',    name: 'Сульфатна к-та',    vp: 12, count: 1, req: { 'H': 2, 'S': 1, 'O': 4 } },
             { id: 'caco3',   f: 'CaCO₃',    name: 'Крейда',            vp: 9, count: 3, req: { 'Ca': 1, 'C': 1, 'O': 3 } },
@@ -360,10 +339,7 @@
             { id: 'na2co3',  f: 'Na₂CO₃',   name: 'Кальцинована сода', vp: 12, count: 3, req: { 'Na': 2, 'C': 1, 'O': 3 } },
         ];
 
-        // ==========================================
-        // ДОПОМІЖНІ ФУНКЦІЇ ЛОГІКИ
-        // ==========================================
-
+        // --- HELPER FUNCTIONS ---
         const shuffleArray = (array) => {
             let arr = [...array];
             for (let i = arr.length - 1; i > 0; i--) {
@@ -408,15 +384,10 @@
             return list;
         };
 
-        // ==========================================
-        // REACT КОМПОНЕНТИ (UI)
-        // ==========================================
+        // --- UI COMPONENTS ---
 
-        // 1. КАРТКА ЕЛЕМЕНТА
         const ElementCard = ({ type, onClick, selected = false, style, overlap = false, mini = false }) => {
             const data = ELEMENTS[type] || { m: '?', name: type };
-            
-            // Динамічні стилі на основі типу елемента
             const cardStyle = { 
                 background: `var(--bg-${type})`, 
                 color: `var(--main-${type})` 
@@ -425,23 +396,14 @@
                 color: `var(--main-${type})` 
             };
 
-            // Міні-версія для модальних вікон
             if (mini) {
                 return (
-                    <div 
-                        onClick={onClick} 
-                        className={`
-                            relative w-12 h-16 rounded-md border shadow-sm flex flex-col items-center justify-center cursor-pointer transition-transform
-                            ${selected ? 'ring-2 ring-yellow-500 scale-110 z-10' : 'hover:scale-105'}
-                        `}
-                        style={cardStyle}
-                    >
+                    <div onClick={onClick} className={`relative w-12 h-16 rounded-md border shadow-sm flex flex-col items-center justify-center cursor-pointer transition-transform ${selected ? 'ring-2 ring-yellow-500 scale-110 z-10' : 'hover:scale-105'}`} style={cardStyle}>
                         <span className="font-bold font-serif text-lg">{type}</span>
                     </div>
                 );
             }
 
-            // Повна версія для ігрового столу
             return (
                 <div 
                     onClick={onClick}
@@ -456,13 +418,11 @@
                     <div className="texture"></div>
                     <div className="card-border-inner"></div>
 
-                    {/* Кутові індикатори */}
                     <div className="corner-circle tl" style={textStyle}>{type}</div>
                     <div className="corner-circle tr" style={textStyle}>{data.m}</div>
                     <div className="corner-circle bl" style={textStyle}>{data.m}</div>
                     <div className="corner-circle br" style={textStyle}>{type}</div>
 
-                    {/* Центр картки */}
                     <div className="center-ring" style={{color: `var(--main-${type})`}}>
                         <div className="symbol-main">{type}</div>
                         <div className="name-ua">{data.name}</div>
@@ -471,7 +431,6 @@
             );
         };
 
-        // 2. КАРТКА МОЛЕКУЛИ
         const MoleculeCard = ({ mol, canBuy, onBuy }) => {
             const atoms = getAtomsList(mol.req);
             
@@ -488,35 +447,20 @@
                     <div className="pattern-bg"></div>
                     <div className="card-border-double"></div>
 
-                    {/* VP (Бали) */}
                     <div className="mol-points">{mol.vp} VP</div>
-
-                    {/* Формула */}
                     <div className="mol-formula">{mol.f}</div>
-
-                    {/* Назва */}
                     <div className="mol-names">
                         <div className="mol-name-trivial">{mol.name}</div>
                     </div>
 
-                    {/* Рецепт (атоми знизу) */}
                     <div className="mol-recipe">
                         {atoms.map((el, i) => (
-                            <div 
-                                key={i} 
-                                className="atom-dot"
-                                style={{
-                                    background: `var(--bg-${el})`, 
-                                    color: `var(--main-${el})`, 
-                                    borderColor: `var(--main-${el})`
-                                }}
-                            >
+                            <div key={i} className="atom-dot" style={{background: `var(--bg-${el})`, color: `var(--main-${el})`, borderColor: `var(--main-${el})`}}>
                                 {el}
                             </div>
                         ))}
                     </div>
 
-                    {/* Оверлей при доступності покупки */}
                     {canBuy && (
                         <div className="absolute inset-0 bg-green-900/20 flex items-center justify-center backdrop-blur-[1px] z-20 animate-pulse">
                             <div className="bg-green-700 text-white px-4 py-2 rounded-full shadow-xl font-black text-xs uppercase tracking-widest flex items-center gap-2 border-2 border-green-500">
@@ -528,7 +472,6 @@
             );
         };
 
-        // 3. УНІВЕРСАЛЬНЕ МОДАЛЬНЕ ВІКНО
         const Modal = ({ isOpen, onClose, title, children }) => {
             if (!isOpen) return null;
             return (
@@ -548,29 +491,28 @@
             );
         };
 
-        // ==========================================
-        // ГОЛОВНИЙ КЛАС ГРИ (LOGIC + STATE)
-        // ==========================================
+        // --- GAME LOGIC COMPONENT ---
 
         const SynthesisGame = () => {
-            // --- СТАН (STATE) ---
+            // STATE
             const [user, setUser] = useState(null);
             const [gameId, setGameId] = useState(localStorage.getItem('lastGameId') || '');
             const [gameData, setGameData] = useState(null);
             const [loading, setLoading] = useState(false);
             const [playerName, setPlayerName] = useState(localStorage.getItem('playerName') || '');
             
-            // Інтерфейс
-            const [selectedCards, setSelectedCards] = useState([]); // Індекси карт в руці
+            // UI State
+            const [selectedCards, setSelectedCards] = useState([]);
             const [notification, setNotification] = useState(null);
             const [targetGameId, setTargetGameId] = useState('');
             
-            // Торгівля
+            // Trade State
             const [isTradeModalOpen, setTradeModalOpen] = useState(false);
-            // Для обміну з гравцями: масив бажаних карт
-            const [tradeWant, setTradeWant] = useState([]); 
+            const [tradeTab, setTradeTab] = useState('bank');
+            const [tradeWant, setTradeWant] = useState([]);
+            const [tradeTargetPlayer, setTradeTargetPlayer] = useState(null);
 
-            // 1. АВТОРИЗАЦІЯ
+            // Auth Effect
             useEffect(() => {
                 const initAuth = async () => {
                     try {
@@ -583,7 +525,7 @@
                 return onAuthStateChanged(auth, setUser);
             }, []);
 
-            // 2. СИНХРОНІЗАЦІЯ ДАНИХ ГРИ (Realtime Listener)
+            // Game Sync Effect
             useEffect(() => {
                 if (!gameId || !db) return;
                 const unsub = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId), (snap) => {
@@ -592,22 +534,23 @@
                     } else {
                         setGameData(null);
                         setGameId('');
+                        localStorage.removeItem('lastGameId');
                         showNotification('error', 'Кімнату не знайдено або закрито');
                     }
                 });
                 return () => unsub();
             }, [gameId]);
 
-            // --- ДОПОМІЖНІ ЗМІННІ ---
+            // Computed Values
             const myIndex = gameData?.players.findIndex(p => p.uid === user?.uid) ?? -1;
             const myPlayer = myIndex !== -1 ? gameData.players[myIndex] : null;
             const isMyTurn = gameData?.status === 'playing' && gameData?.turnIndex === myIndex;
             const isHost = gameData?.players[0].uid === user?.uid;
             
-            const turnPhase = gameData?.turnPhase; // 'draw', 'action', 'discard_force'
+            const turnPhase = gameData?.turnPhase; 
             const isDiscardPhase = turnPhase === 'discard_force' && isMyTurn;
             
-            // ОНОВЛЕНА ЛОГІКА СКИДАННЯ: Якщо карт > 10, скидаємо половину (округлено вниз)
+            // Discard Logic: If cards > 10, discard floor(count / 2)
             const calculateCardsToDiscard = () => {
                 if (!myPlayer) return 0;
                 if (myPlayer.hand.length > 10) {
@@ -617,13 +560,23 @@
             };
             const cardsToDiscard = isDiscardPhase ? calculateCardsToDiscard() : 0;
 
-            // Функція для показу сповіщень
+            // --- ACTIONS ---
+
             const showNotification = (type, msg) => {
                 setNotification({ type, msg });
                 setTimeout(() => setNotification(null), 3000);
             };
 
-            // --- ОСНОВНІ ДІЇ ГРИ ---
+            const leaveGame = () => {
+                if(confirm("Ви дійсно хочете покинути поточну гру?")) {
+                    setGameId('');
+                    setGameData(null);
+                    localStorage.removeItem('lastGameId');
+                    // Reset local UI state
+                    setSelectedCards([]);
+                    setTradeModalOpen(false);
+                }
+            };
 
             const createGame = async () => {
                 if (!playerName.trim()) return showNotification('error', "Введіть ваше ім'я!");
@@ -676,7 +629,6 @@
                         if (d.status !== 'waiting') throw "Гра вже почалась";
                         if (d.players.length >= 4) throw "Кімната переповнена";
                         
-                        // Якщо гравець не в списку, додаємо
                         if (!d.players.some(p => p.uid === user.uid)) {
                             t.update(ref, {
                                 players: arrayUnion({ uid: user.uid, name: playerName, hand: [], score: 0, molecules: [] }),
@@ -694,7 +646,6 @@
 
             const startGame = async () => {
                 const deck = [...gameData.elementDeck];
-                // Роздаємо по 5 карт
                 const players = gameData.players.map(p => ({ ...p, hand: deck.splice(0, 5) }));
                 
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId), {
@@ -719,7 +670,6 @@
                 const players = [...gameData.players];
                 players[myIndex].hand.push(...drawn);
                 
-                // Перевірка на скидання карт (якщо > 10)
                 const nextPhase = players[myIndex].hand.length > 10 ? 'discard_force' : 'action';
 
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId), {
@@ -736,7 +686,6 @@
                 }
                 
                 let hand = [...myPlayer.hand];
-                // Видаляємо карти (сортуємо індекси за спаданням)
                 selectedCards.sort((a,b)=>b-a).forEach(i => hand.splice(i, 1));
                 
                 const players = [...gameData.players];
@@ -754,7 +703,6 @@
                 if (!checkRecipe(myPlayer.hand, mol.req)) return;
 
                 let hand = [...myPlayer.hand];
-                // Видаляємо ресурси
                 Object.entries(mol.req).forEach(([el, cnt]) => {
                     for(let i=0; i<cnt; i++) {
                         const idx = hand.indexOf(el);
@@ -770,7 +718,6 @@
                     score: myPlayer.score + mol.vp
                 };
 
-                // Оновлюємо ринок
                 const market = [...gameData.market];
                 const marketIdx = market.findIndex(m => m.uniqueId === mol.uniqueId);
                 market.splice(marketIdx, 1);
@@ -778,9 +725,8 @@
                 const molDeck = [...gameData.moleculeDeck];
                 if (molDeck.length > 0) market.push(molDeck.shift());
 
-                // ПЕРЕВІРКА ПЕРЕМОГИ: 50 VP
-                const newScore = players[myIndex].score;
-                const status = newScore >= WINNING_SCORE ? 'finished' : 'playing';
+                // WIN CONDITION CHECK
+                const status = players[myIndex].score >= WINNING_SCORE ? 'finished' : 'playing';
 
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId), {
                     players: players,
@@ -796,35 +742,22 @@
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId), {
                     turnIndex: nextIndex,
                     turnPhase: 'draw',
-                    activeTrade: null, // Скидаємо будь-які активні пропозиції
+                    activeTrade: null,
                     logs: arrayUnion({ text: `Хід переходить далі до ${gameData.players[nextIndex].name}`, time: Date.now() })
                 });
             };
 
-            // ==========================================
-            // ВИПРАВЛЕНА ЛОГІКА ТОРГІВЛІ
-            // ==========================================
+            // --- TARGETED TRADE LOGIC ---
 
-            const addToTradeWant = (el) => {
-                setTradeWant(prev => [...prev, el]);
-            };
+            const addToTradeWant = (el) => setTradeWant(prev => [...prev, el]);
+            const removeFromTradeWant = (idx) => setTradeWant(prev => prev.filter((_, i) => i !== idx));
+            const selectTradeTarget = (uid) => setTradeTargetPlayer(uid === tradeTargetPlayer ? null : uid);
 
-            const removeFromTradeWant = (idx) => {
-                setTradeWant(prev => prev.filter((_, i) => i !== idx));
-            };
-
-            // 1. Обмін з БАНКОМ (3:1)
             const executeBankTrade = async () => {
-                if (selectedCards.length !== 3) {
-                    return showNotification('error', "Для банку оберіть 3 карти у себе в руці (на головному екрані)!");
-                }
+                if (selectedCards.length !== 3) return showNotification('error', "Оберіть 3 карти у себе в руці!");
                 const first = myPlayer.hand[selectedCards[0]];
-                if (!selectedCards.every(i => myPlayer.hand[i] === first)) {
-                    return showNotification('error', "Для банку карти мають бути однакові!");
-                }
-                if (tradeWant.length !== 1) {
-                    return showNotification('error', "Оберіть рівно 1 карту для отримання!");
-                }
+                if (!selectedCards.every(i => myPlayer.hand[i] === first)) return showNotification('error', "Для банку карти мають бути однакові!");
+                if (tradeWant.length !== 1) return showNotification('error', "Оберіть 1 карту для отримання!");
 
                 let hand = [...myPlayer.hand];
                 selectedCards.sort((a,b)=>b-a).forEach(i => hand.splice(i, 1));
@@ -838,46 +771,35 @@
                     logs: arrayUnion({ text: `${myPlayer.name} обміняв 3 ${first} на ${tradeWant[0]} (Банк)`, time: Date.now() })
                 });
                 
-                setTradeModalOpen(false);
-                setSelectedCards([]);
-                setTradeWant([]);
+                setTradeModalOpen(false); setSelectedCards([]); setTradeWant([]);
             };
 
-            // 2. Створення пропозиції для ГРАВЦІВ
             const createPlayerTrade = async () => {
-                if (selectedCards.length === 0) {
-                    return showNotification('error', "Спочатку оберіть карти в руці, які ви віддаєте!");
-                }
-                if (tradeWant.length === 0) {
-                    return showNotification('error', "Оберіть карти, які ви хочете!");
-                }
+                if (selectedCards.length === 0) return showNotification('error', "Спочатку оберіть карти в руці, які ви віддаєте!");
+                if (tradeWant.length === 0) return showNotification('error', "Оберіть карти, які ви хочете!");
+                if (!tradeTargetPlayer) return showNotification('error', "Оберіть партнера для обміну!");
                 
                 const giveCards = selectedCards.map(i => myPlayer.hand[i]);
-                
+                const targetName = gameData.players.find(p => p.uid === tradeTargetPlayer)?.name || "Невідомий";
+
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId), {
                     activeTrade: {
                         initiator: user.uid,
+                        target: tradeTargetPlayer, // TARGETED
                         give: giveCards,
                         want: tradeWant
                     },
-                    logs: arrayUnion({ text: `${myPlayer.name} пропонує обмін: [${giveCards.join(', ')}] на [${tradeWant.join(', ')}]`, time: Date.now() })
+                    logs: arrayUnion({ text: `${myPlayer.name} надсилає пропозицію обміну гравцю ${targetName}`, time: Date.now() })
                 });
 
-                setTradeModalOpen(false);
-                setSelectedCards([]);
-                setTradeWant([]);
+                setTradeModalOpen(false); setSelectedCards([]); setTradeWant([]); setTradeTargetPlayer(null);
             };
 
-            // 3. Прийняття пропозиції (Іншим гравцем)
             const acceptActiveTrade = async () => {
                 const tr = gameData.activeTrade;
-                if (!tr) return;
+                if (!tr || tr.target !== user.uid) return;
                 
-                // Перевіряємо, чи має гравець (Acceptor) карти, які хоче Ініціатор (tr.want)
                 let acceptorHand = [...myPlayer.hand];
-                let missing = [];
-                
-                // Рахуємо карти
                 const handCounts = {};
                 acceptorHand.forEach(c => handCounts[c] = (handCounts[c]||0) + 1);
                 
@@ -890,21 +812,16 @@
                     }
                 }
 
-                // Виконуємо обмін
                 const initIdx = gameData.players.findIndex(p => p.uid === tr.initiator);
                 const initiator = gameData.players[initIdx];
                 let initiatorHand = [...initiator.hand];
 
-                // Acceptor віддає те, що хотів Initiator
                 tr.want.forEach(card => {
                     const idx = acceptorHand.indexOf(card);
                     if (idx > -1) acceptorHand.splice(idx, 1);
                 });
-
-                // Initiator отримує те, що хотів
                 initiatorHand.push(...tr.want);
 
-                // Initiator віддає те, що пропонував
                 tr.give.forEach(card => {
                     const idx = initiatorHand.indexOf(card);
                     if (idx > -1) initiatorHand.splice(idx, 1);
@@ -918,25 +835,22 @@
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId), {
                     players: players,
                     activeTrade: null,
-                    logs: arrayUnion({ text: `Обмін успішно завершено між ${initiator.name} та ${myPlayer.name}`, time: Date.now() })
+                    logs: arrayUnion({ text: `Обмін успішно завершено: ${initiator.name} ↔ ${myPlayer.name}`, time: Date.now() })
                 });
             };
             
-            // 4. Відхилення пропозиції (Будь-ким або ініціатором)
             const rejectActiveTrade = async () => {
                  await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId), {
                     activeTrade: null,
-                    logs: arrayUnion({ text: `${myPlayer.name} відхилив/скасував пропозицію обміну`, time: Date.now() })
+                    logs: arrayUnion({ text: `${myPlayer.name} відхилив пропозицію обміну`, time: Date.now() })
                 });
             };
 
-            // Перевірка: чи можу я бачити кнопку "Прийняти"
             const canIAcceptTrade = (trade) => {
-                if (!trade || !myPlayer) return false;
+                if (!trade || trade.target !== user.uid || !myPlayer) return false;
                 
                 const myCounts = {}; 
                 myPlayer.hand.forEach(c => myCounts[c] = (myCounts[c]||0)+1);
-                
                 const wantCounts = {}; 
                 trade.want.forEach(c => wantCounts[c] = (wantCounts[c]||0)+1);
                 
@@ -946,22 +860,19 @@
                 return true;
             };
 
-            // Функція відкриття модалки торгівлі
             const openTradeModal = () => {
                 setTradeWant([]); 
+                setTradeTargetPlayer(null);
                 setTradeModalOpen(true);
             };
 
-
-            // ==========================================
-            // РЕНДЕРИНГ (UI)
-            // ==========================================
+            // --- RENDER ---
 
             if (loading) {
                 return <div className="h-screen w-full bg-[#0d1f14] flex items-center justify-center"><Loader2 className="animate-spin text-yellow-500" size={64}/></div>;
             }
 
-            // ЕКРАН ЛОБІ
+            // LOBBY
             if (!gameData) {
                 return (
                     <div className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center">
@@ -997,14 +908,11 @@
                 );
             }
 
-            // ЕКРАН ФІНАЛУ ГРИ
+            // GAME OVER
             if (gameData.status === 'finished') {
-                // Сортуємо гравців за балами
                 const sortedPlayers = [...gameData.players].sort((a,b) => b.score - a.score);
-
                 return (
                     <div className="min-h-screen bg-[#0d1f14] flex flex-col items-center justify-center p-4 relative overflow-hidden">
-                        {/* Салют на фоні (імітація) */}
                         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-30 animate-pulse"></div>
                         
                         <div className="bg-[#1a3c28] p-8 rounded-3xl border-4 border-yellow-500 shadow-2xl max-w-lg w-full z-10 text-center relative">
@@ -1042,7 +950,7 @@
                                 ))}
                             </div>
 
-                            <button onClick={() => setGameId('')} className="w-full py-4 bg-green-800 hover:bg-green-700 text-white rounded-xl font-bold font-serif uppercase tracking-widest border-b-4 border-green-950 active:border-b-0 active:translate-y-1 transition-all">
+                            <button onClick={leaveGame} className="w-full py-4 bg-green-800 hover:bg-green-700 text-white rounded-xl font-bold font-serif uppercase tracking-widest border-b-4 border-green-950 active:border-b-0 active:translate-y-1 transition-all">
                                 Повернутися в меню
                             </button>
                         </div>
@@ -1050,7 +958,7 @@
                 );
             }
 
-            // ЕКРАН ОЧІКУВАННЯ
+            // WAITING ROOM
             if (gameData.status === 'waiting') {
                 return (
                     <div className="min-h-screen bg-[#0d1f14] flex flex-col items-center justify-center p-4">
@@ -1091,11 +999,11 @@
                 );
             }
 
-            // ОСНОВНИЙ ЕКРАН ГРИ
+            // MAIN GAME
             return (
                 <div className="h-screen flex flex-col relative overflow-hidden">
                     
-                    {/* ВЕРХНЯ ПАНЕЛЬ */}
+                    {/* HEADER */}
                     <header className="bg-[#0f291a] shadow-xl z-50 shrink-0 border-b border-green-800 px-4 py-2 flex justify-between items-center backdrop-blur-md">
                         <div className="flex items-center gap-2">
                             <span className="text-yellow-500 font-black font-serif text-lg tracking-widest hidden sm:inline">СИНТЕЗ</span>
@@ -1104,7 +1012,6 @@
                             </span>
                         </div>
                         
-                        {/* Список гравців зверху */}
                         <div className="flex overflow-x-auto gap-2 ml-2 scrollbar-hide flex-1 justify-end">
                             {gameData.players.map((p, i) => {
                                 const active = gameData.turnIndex === i;
@@ -1121,14 +1028,17 @@
                                 );
                             })}
                         </div>
+                        <button onClick={leaveGame} className="ml-2 text-green-600 hover:text-red-400 p-2 transition-colors">
+                            <LogOut size={20}/>
+                        </button>
                     </header>
 
-                    {/* АЛЕРТ ВХІДНОЇ ТОРГІВЛІ (ДЛЯ ІНШИХ ГРАВЦІВ) */}
-                    {gameData.activeTrade && gameData.activeTrade.initiator !== user.uid && (
+                    {/* TARGETED TRADE ALERT (ONLY FOR TARGET) */}
+                    {gameData.activeTrade && gameData.activeTrade.target === user.uid && (
                         <div className="absolute top-20 left-4 right-4 z-[60] animate-in slide-in-from-top duration-500 pointer-events-auto">
                             <div className="bg-[#f0fdf4] border-l-8 border-green-600 rounded-lg p-4 shadow-2xl flex flex-col gap-3 text-black max-w-lg mx-auto">
                                 <div className="font-bold text-center text-sm font-serif">
-                                    <span className="text-green-800 uppercase text-xs block mb-1 tracking-widest">🔥 ПРОПОЗИЦІЯ ОБМІНУ</span>
+                                    <span className="text-green-800 uppercase text-xs block mb-1 tracking-widest">🔥 ВХІДНА ПРОПОЗИЦІЯ</span>
                                     {gameData.players.find(p=>p.uid===gameData.activeTrade.initiator)?.name} пропонує:<br/>
                                     
                                     <div className="flex flex-wrap justify-center gap-1 my-2">
@@ -1157,15 +1067,15 @@
                                         ВІДХИЛИТИ
                                     </button>
                                 </div>
-                                {!canIAcceptTrade(gameData.activeTrade) && <div className="text-center text-red-500 text-xs italic">У вас недостатньо ресурсів для обміну</div>}
+                                {!canIAcceptTrade(gameData.activeTrade) && <div className="text-center text-red-500 text-xs italic">У вас недостатньо ресурсів</div>}
                             </div>
                         </div>
                     )}
 
-                    {/* ЦЕНТРАЛЬНА ОБЛАСТЬ */}
+                    {/* MAIN AREA */}
                     <div className="flex-1 overflow-y-auto p-4 pb-60 scrollbar-hide relative pt-32 sm:pt-4">
                         
-                        {/* Журнал подій для мобільних (зверху) та десктопів (збоку) */}
+                        {/* MOBILE LOGS */}
                         <div className="
                             fixed top-[70px] left-2 right-2 h-20 
                             sm:top-auto sm:bottom-[240px] sm:left-auto sm:right-4 sm:w-64 sm:h-40
@@ -1180,7 +1090,7 @@
                             ))}
                         </div>
 
-                        {/* Ринок карток */}
+                        {/* MARKET */}
                         <div className="flex flex-wrap gap-4 justify-center pb-20 mt-4 sm:mt-0">
                             {gameData.market.map(mol => (
                                 <MoleculeCard 
@@ -1198,7 +1108,7 @@
                         </div>
                     </div>
 
-                    {/* СПОВІЩЕННЯ (TOAST) */}
+                    {/* NOTIFICATIONS */}
                     {notification && (
                         <div className={`
                             fixed bottom-1/2 left-1/2 -translate-x-1/2 px-6 py-3 rounded-xl shadow-2xl text-white font-bold z-[100] 
@@ -1210,10 +1120,10 @@
                         </div>
                     )}
 
-                    {/* НИЖНЯ ПАНЕЛЬ: Дії та Рука */}
+                    {/* BOTTOM PANEL */}
                     <div className="absolute bottom-0 left-0 w-full z-40 flex flex-col justify-end pointer-events-none">
                         
-                        {/* Кнопки дій (плавають над рукою) */}
+                        {/* ACTIONS */}
                         <div className="flex justify-center mb-4 px-4 gap-3 pointer-events-auto">
                             {isMyTurn && (
                                 <>
@@ -1248,15 +1158,15 @@
                                 </>
                             )}
                             
-                            {/* Якщо я ініціатор обміну - кнопка скасування */}
+                            {/* CANCEL OFFER BUTTON */}
                             {gameData.activeTrade && gameData.activeTrade.initiator === user.uid && (
-                                <button onClick={cancelActiveTrade} className="bg-gray-600 text-white px-6 py-3 rounded-full font-bold text-xs shadow-lg flex items-center gap-2 hover:bg-gray-500 transition-colors">
+                                <button onClick={rejectActiveTrade} className="bg-gray-600 text-white px-6 py-3 rounded-full font-bold text-xs shadow-lg flex items-center gap-2 hover:bg-gray-500 transition-colors">
                                     <X size={16}/> СКАСУВАТИ ОБМІН
                                 </button>
                             )}
                         </div>
 
-                        {/* Панель з картами */}
+                        {/* HAND */}
                         <div className="bg-[#1a3c28] w-full rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.6)] pt-3 pb-8 px-2 relative pointer-events-auto border-t-4 border-yellow-600 transition-transform hover:translate-y-0 translate-y-2">
                             <div className="w-16 h-1.5 bg-green-700 rounded-full mx-auto mb-3"></div>
                             <div className="text-center text-[10px] text-green-400 font-black uppercase tracking-widest mb-1">
@@ -1265,13 +1175,11 @@
                             
                             <div className="overflow-x-auto overflow-y-visible flex justify-center px-4 py-4 min-h-[170px] scrollbar-hide pb-10">
                                 <div className="flex -space-x-10 sm:-space-x-6 px-8 items-end">
-                                    {/* Сортування та відображення карт */}
                                     {myPlayer?.hand
                                         .map((card, idx) => ({ card, idx }))
                                         .sort((a, b) => a.card.localeCompare(b.card))
                                         .map(({ card, idx }, i, arr) => {
                                             const isSelected = selectedCards.includes(idx);
-                                            // Розрахунок віяла
                                             const rotation = (i - (arr.length - 1) / 2) * 4; 
                                             const translateY = Math.abs(i - (arr.length - 1) / 2) * 3;
 
@@ -1288,7 +1196,6 @@
                                                         type={card} 
                                                         selected={isSelected} 
                                                         onClick={() => {
-                                                            // Дозволяємо виділення тільки у фазах дії або скидання
                                                             if(isMyTurn && (turnPhase==='discard_force'||turnPhase==='action')) {
                                                                 setSelectedCards(p => p.includes(idx) ? p.filter(x => x!==idx) : [...p, idx]);
                                                             }
@@ -1303,13 +1210,29 @@
                         </div>
                     </div>
 
-                    {/* МОДАЛЬНЕ ВІКНО ТОРГІВЛІ (Виправлене) */}
+                    {/* TRADE MODAL */}
                     <Modal isOpen={isTradeModalOpen} onClose={() => setTradeModalOpen(false)} title="Торгова Гільдія">
-                        
-                        {/* Відображення того, що вже обрано в руці */}
+                        <div className="flex mb-4 bg-green-100 p-1 rounded-xl">
+                            <button 
+                                onClick={() => {setTradeTab('bank'); setTradeWant([]); setTradeTargetPlayer(null);}} 
+                                className={`flex-1 py-3 rounded-lg font-bold text-xs uppercase transition-all flex flex-col items-center ${tradeTab==='bank' ? 'bg-yellow-600 text-white shadow' : 'text-green-800 hover:bg-green-200'}`}
+                            >
+                                <span className="text-sm">Банк</span>
+                                <span className="opacity-70 text-[10px]">Курс 3:1</span>
+                            </button>
+                            <button 
+                                onClick={() => {setTradeTab('player'); setTradeWant([]);}} 
+                                className={`flex-1 py-3 rounded-lg font-bold text-xs uppercase transition-all flex flex-col items-center ${tradeTab==='player' ? 'bg-purple-700 text-white shadow' : 'text-green-800 hover:bg-green-200'}`}
+                            >
+                                <span className="text-sm">Приватний обмін</span>
+                                <span className="opacity-70 text-[10px]">Вільний курс</span>
+                            </button>
+                        </div>
+
+                        {/* STEP 1: GIVING */}
                         <div className="mb-4">
                             <h4 className="text-[10px] font-bold text-green-800 uppercase mb-2 flex justify-between">
-                                <span>1. Ви віддаєте (Обрано з руки):</span>
+                                <span>1. Ви віддаєте:</span>
                                 <span className="text-green-600">{selectedCards.length} шт.</span>
                             </h4>
                             <div className="flex gap-2 min-h-[60px] p-2 bg-white border border-green-300 rounded-lg overflow-x-auto items-center">
@@ -1317,20 +1240,43 @@
                                     <div key={idx} className="flex flex-col items-center justify-center w-10 h-12 rounded shadow-sm shrink-0" style={{background: `var(--bg-${myPlayer.hand[idx]})`, color: `var(--main-${myPlayer.hand[idx]})`}}>
                                         <span className="font-serif font-bold text-sm">{myPlayer.hand[idx]}</span>
                                     </div>
-                                )) : <span className="text-xs text-gray-400 italic mx-auto">Спочатку оберіть карти у себе в руці (знизу екрана) перед відкриттям цього вікна, або закрийте його і оберіть зараз.</span>}
+                                )) : <span className="text-xs text-gray-400 italic mx-auto">Оберіть карти в руці (знизу)</span>}
                             </div>
                         </div>
 
                         <div className="flex justify-center my-2 text-gray-300"><ArrowRightLeft size={20}/></div>
 
-                        {/* КРОК 2: Що отримуємо */}
+                        {/* STEP 2: SELECT PARTNER (ONLY FOR PLAYER TRADE) */}
+                        {tradeTab === 'player' && (
+                            <div className="mb-4">
+                                <h4 className="text-[10px] font-bold text-green-800 uppercase mb-2">2. Оберіть партнера:</h4>
+                                <div className="flex flex-wrap gap-2">
+                                    {gameData.players.filter(p => p.uid !== user.uid).map(p => (
+                                        <button 
+                                            key={p.uid} 
+                                            onClick={() => selectTradeTarget(p.uid)}
+                                            className={`
+                                                px-3 py-2 rounded-lg text-xs font-bold border transition-all
+                                                ${tradeTargetPlayer === p.uid 
+                                                    ? 'bg-purple-600 text-white border-purple-800 ring-2 ring-purple-300' 
+                                                    : 'bg-white text-green-800 border-green-300 hover:bg-green-50'}
+                                            `}
+                                        >
+                                            {p.name}
+                                        </button>
+                                    ))}
+                                    {gameData.players.length < 2 && <span className="text-xs text-gray-400 italic">Немає інших гравців...</span>}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* STEP 3: SELECT WANTED */}
                         <div className="mb-6">
                             <h4 className="text-[10px] font-bold text-green-800 uppercase mb-2 flex justify-between">
-                                <span>2. Ви отримуєте:</span>
+                                <span>{tradeTab === 'player' ? '3' : '2'}. Ви хочете отримати:</span>
                                 <span className="text-green-600">{tradeWant.length} шт.</span>
                             </h4>
                             
-                            {/* Список обраних для отримання */}
                             {tradeWant.length > 0 && (
                                 <div className="flex flex-wrap gap-2 mb-3 p-2 bg-gray-50 border border-gray-200 rounded-lg min-h-[40px]">
                                     {tradeWant.map((el, i) => (
@@ -1347,12 +1293,11 @@
                                 </div>
                             )}
 
-                            {/* Палітра вибору */}
                             <div className="grid grid-cols-5 gap-2">
                                 {Object.keys(ELEMENTS).map(el => (
                                     <button 
                                         key={el} 
-                                        onClick={() => addToTradeWant(el)} 
+                                        onClick={() => { if (tradeTab === 'bank') setTradeWant([el]); else addToTradeWant(el); }} 
                                         className="p-1 rounded-lg border text-[10px] font-bold bg-white text-green-900 hover:bg-green-100 flex flex-col items-center transition-colors h-10 justify-center shadow-sm"
                                     >
                                         <span className="text-xs">{el}</span>
@@ -1361,32 +1306,18 @@
                             </div>
                         </div>
 
-                        {/* Кнопки дій */}
-                        <div className="flex flex-col gap-3">
-                            <button 
-                                onClick={executeBankTrade} 
-                                disabled={selectedCards.length !== 3 || tradeWant.length !== 1}
-                                className={`
-                                    w-full py-3 rounded-xl font-bold uppercase text-xs tracking-widest shadow-md transition-all flex justify-between px-4
-                                    ${(selectedCards.length === 3 && tradeWant.length === 1) ? 'bg-yellow-600 text-white hover:bg-yellow-500' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}
-                                `}
-                            >
-                                <span>Обмін з Банком</span>
-                                <span>3:1</span>
-                            </button>
-
-                            <button 
-                                onClick={createPlayerTrade} 
-                                disabled={selectedCards.length === 0 || tradeWant.length === 0}
-                                className={`
-                                    w-full py-3 rounded-xl font-bold uppercase text-xs tracking-widest shadow-md transition-all flex justify-between px-4
-                                    ${(selectedCards.length > 0 && tradeWant.length > 0) ? 'bg-purple-700 text-white hover:bg-purple-600' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}
-                                `}
-                            >
-                                <span>Пропозиція Гравцям</span>
-                                <span>Всі</span>
-                            </button>
-                        </div>
+                        <button 
+                            onClick={tradeTab === 'bank' ? executeBankTrade : createPlayerTrade} 
+                            disabled={tradeTab === 'bank' ? (selectedCards.length !== 3 || tradeWant.length !== 1) : (selectedCards.length === 0 || tradeWant.length === 0 || !tradeTargetPlayer)}
+                            className={`
+                                w-full py-3 rounded-xl font-bold uppercase text-xs tracking-widest shadow-md transition-all flex justify-between px-4
+                                ${((tradeTab==='bank' && selectedCards.length===3 && tradeWant.length===1) || (tradeTab==='player' && selectedCards.length>0 && tradeWant.length>0 && tradeTargetPlayer)) 
+                                    ? (tradeTab === 'bank' ? 'bg-yellow-600 text-white hover:bg-yellow-500' : 'bg-purple-700 text-white hover:bg-purple-600') 
+                                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'}
+                            `}
+                        >
+                            <span>{tradeTab === 'bank' ? 'Обмін з Банком' : 'Надіслати пропозицію'}</span>
+                        </button>
                     </Modal>
 
                 </div>
