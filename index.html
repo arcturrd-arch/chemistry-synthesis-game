@@ -53,17 +53,43 @@
             Atom, FlaskConical, Users, Copy, Check, AlertTriangle, 
             ArrowRightLeft, Play, RotateCcw, Crown, LogOut, Loader2, X, RefreshCcw, LayoutGrid, Menu, History, Trash2
         } from 'https://esm.sh/lucide-react@0.263.1';
+// Додаємо getAuth та signInAnonymously в імпорт
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+const firebaseConfig = { /* ВАШІ ДАНІ */ };
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+// Функція автоматичного входу
+signInAnonymously(auth)
+  .then(() => {
+    console.log("Увійшли анонімно!");
+  })
+  .catch((error) => {
+    console.error("Помилка входу:", error.code, error.message);
+  });
+
+// Відстеження стану користувача
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    // Користувач увійшов, його унікальний ID:
+    console.log("ID гравця:", user.uid);
+  }
+});
         // ==========================================
         // НАЛАШТУВАННЯ FIREBASE
         // ==========================================
         const firebaseConfig = {
-            apiKey: "AIzaSyCCMdryzKt4-sRq2snh16Ciug2V_cRcBIU",
-            authDomain: "synthesis-game-chem.firebaseapp.com",
-            projectId: "synthesis-game-chem",
-            storageBucket: "synthesis-game-chem.firebasestorage.app",
-            messagingSenderId: "441318316675",
-            appId: "1:441318316675:web:361daca49c3924e94a99b6"
+            apiKey: "AIzaSyAEownlzJ0AqrnAku7Cw208N2DRLQHdD6Y",
+  authDomain: "synthesis-game-f9684.firebaseapp.com",
+  projectId: "synthesis-game-f9684",
+  storageBucket: "synthesis-game-f9684.firebasestorage.app",
+  messagingSenderId: "257683012244",
+  appId: "1:257683012244:web:c7aee7e27c929ceb5b9281"
         };
         
         let app, auth, db;
