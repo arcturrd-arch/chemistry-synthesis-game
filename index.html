@@ -3,25 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>СИНТЕЗ - Elite Edition</title>
+    <title>СИНТЕЗ - Alchemy Grand Master</title>
     
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS (для розмітки) -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- React & Babel -->
+    <!-- React & Babel (для логіки) -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Нові шрифти з макетів -->
+    <!-- Шрифти (Playfair для заголовків, Cormorant для текстів) -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Cormorant+Garamond:wght@600;700&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
 
     <style>
-        /* --- ЗАГАЛЬНІ СТИЛІ --- */
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        /* =========================================
+           ГЛОБАЛЬНІ СТИЛІ ТА ФОНИ
+           ========================================= */
+        
+        .scrollbar-hide::-webkit-scrollbar { 
+            display: none; 
+        }
+        
+        .scrollbar-hide { 
+            -ms-overflow-style: none; 
+            scrollbar-width: none; 
+        }
         
         body {
             font-family: 'Cormorant Garamond', serif;
-            background-color: #0d1f14; /* Темно-зелений фон столу */
+            background-color: #0d1f14; /* Глибокий зелений */
+            /* Тонка сітка на фоні */
             background-image: radial-gradient(#1a3c28 1px, transparent 1px);
             background-size: 20px 20px;
             color: #ecfdf5;
@@ -29,76 +39,94 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* --- ЗМІННІ КОЛЬОРІВ ЕЛЕМЕНТІВ (З файлу Element) --- */
+        /* =========================================
+           ПАЛІТРА КОЛЬОРІВ ЕЛЕМЕНТІВ (CSS Variables)
+           ========================================= */
         :root {
-            /* O - Оксиген */
+            /* ОКСИГЕН (Червоний) */
             --main-O: #B71C1C; 
-            --bg-O: radial-gradient(circle, #FFEBEE 0%, #EF9A9A 150%);
-            /* H - Гідроген */
+            --bg-O: radial-gradient(circle at center, #FFEBEE 0%, #EF9A9A 100%);
+            
+            /* ГІДРОГЕН (Блакитний/Сірий) */
             --main-H: #37474F; 
-            --bg-H: radial-gradient(circle, #E3F2FD 0%, #90A4AE 150%);
-            /* C - Карбон */
+            --bg-H: radial-gradient(circle at center, #E3F2FD 0%, #90A4AE 100%);
+            
+            /* КАРБОН (Чорний/Сірий) */
             --main-C: #000000; 
-            --bg-C: radial-gradient(circle, #E0E0E0 0%, #616161 150%);
-            /* Na - Натрій */
+            --bg-C: radial-gradient(circle at center, #E0E0E0 0%, #616161 100%);
+            
+            /* НАТРІЙ (Фіолетовий) */
             --main-Na: #4A148C; 
-            --bg-Na: radial-gradient(circle, #F3E5F5 0%, #CE93D8 150%);
-            /* Ca - Кальцій */
+            --bg-Na: radial-gradient(circle at center, #F3E5F5 0%, #CE93D8 100%);
+            
+            /* КАЛЬЦІЙ (Помаранчевий) */
             --main-Ca: #BF360C; 
-            --bg-Ca: radial-gradient(circle, #FFF3E0 0%, #FFCC80 150%);
-            /* Cl - Хлор */
+            --bg-Ca: radial-gradient(circle at center, #FFF3E0 0%, #FFCC80 100%);
+            
+            /* ХЛОР (Зелений) */
             --main-Cl: #1B5E20; 
-            --bg-Cl: radial-gradient(circle, #E8F5E9 0%, #A5D6A7 150%);
-            /* N - Нітроген */
+            --bg-Cl: radial-gradient(circle at center, #E8F5E9 0%, #A5D6A7 100%);
+            
+            /* НІТРОГЕН (Синій) */
             --main-N: #1A237E; 
-            --bg-N: radial-gradient(circle, #E8EAF6 0%, #9FA8DA 150%);
-            /* S - Сульфур */
+            --bg-N: radial-gradient(circle at center, #E8EAF6 0%, #9FA8DA 100%);
+            
+            /* СУЛЬФУР (Жовтий) */
             --main-S: #F57F17; 
-            --bg-S: radial-gradient(circle, #FFFDE7 0%, #FFF59D 150%);
-            /* Si - Силіцій */
+            --bg-S: radial-gradient(circle at center, #FFFDE7 0%, #FFF59D 100%);
+            
+            /* СИЛІЦІЙ (Коричневий) */
             --main-Si: #3E2723; 
-            --bg-Si: radial-gradient(circle, #EFEBE9 0%, #BCAAA4 150%);
+            --bg-Si: radial-gradient(circle at center, #EFEBE9 0%, #BCAAA4 100%);
 
-            /* Молекули */
+            /* МОЛЕКУЛИ (Золото) */
             --gold-front: radial-gradient(circle at center, #fffdf5 0%, #fceeb5 100%);
             --green-classic: #006400;
         }
 
-        /* --- СТИЛІ КАРТКИ ЕЛЕМЕНТА --- */
+        /* =========================================
+           СТИЛІ КАРТКИ ЕЛЕМЕНТА
+           ========================================= */
         .card-element {
             position: relative;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 2px 4px 10px rgba(0,0,0,0.4);
-            transition: transform 0.2s;
+            box-shadow: 2px 4px 10px rgba(0,0,0,0.5);
+            transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             background: #fff; /* Fallback */
             border: 1px solid rgba(0,0,0,0.1);
         }
         
-        .card-element .pattern-bg {
-            position: absolute; inset: 0; opacity: 0.15;
-            background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 0 L20 5 L20 15 L10 20 L0 15 L0 5 Z' fill='none' stroke='%23000' stroke-width='1'/%3E%3C/svg%3E");
-            background-size: 30px 30px;
-        }
-
+        /* Текстура "зоряний пил" для глибини (без патерну) */
         .card-element .texture {
-            position: absolute; inset: 0; opacity: 0.4; mix-blend-mode: multiply;
+            position: absolute; 
+            inset: 0; 
+            opacity: 0.3; 
+            mix-blend-mode: multiply;
             background-image: url("https://www.transparenttextures.com/patterns/stardust.png");
+            pointer-events: none;
         }
 
+        /* Внутрішня рамка */
         .card-element .card-border-inner {
-            position: absolute; top: 4px; left: 4px; right: 4px; bottom: 4px;
-            border: 2px solid rgba(255,255,255,0.6);
-            border-radius: 8px; pointer-events: none;
+            position: absolute; 
+            top: 4px; left: 4px; right: 4px; bottom: 4px;
+            border: 2px solid rgba(255,255,255,0.5);
+            border-radius: 8px; 
+            pointer-events: none;
         }
 
+        /* Кутові кружечки */
         .corner-circle {
-            position: absolute; width: 24px; height: 24px;
-            background: rgba(255,255,255,0.95);
+            position: absolute; 
+            width: 24px; height: 24px;
+            background: rgba(255,255,255,0.9);
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
-            font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 10px;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+            font-family: 'Montserrat', sans-serif; 
+            font-weight: 800; 
+            font-size: 10px;
             z-index: 10;
         }
         .tl { top: 8px; left: 8px; }
@@ -106,17 +134,20 @@
         .bl { bottom: 8px; left: 8px; }
         .br { bottom: 8px; right: 8px; }
 
+        /* Центральне кільце */
         .center-ring {
-            position: absolute; top: 50%; left: 50%;
+            position: absolute; 
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 70%; aspect-ratio: 1/1;
-            background: rgba(255,255,255,0.85);
+            width: 65%; 
+            aspect-ratio: 1/1;
+            background: rgba(255,255,255,0.7);
             border-radius: 50%;
-            border: 2px solid rgba(255,255,255,0.9);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            border: 2px solid rgba(255,255,255,0.8);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             z-index: 5;
-            backdrop-filter: blur(2px);
+            backdrop-filter: blur(3px);
         }
 
         .symbol-main {
@@ -126,11 +157,14 @@
         
         .name-ua {
             font-family: 'Cormorant Garamond', serif;
-            font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;
-            margin-top: 2px;
+            font-weight: 700; font-size: 0.7rem; 
+            text-transform: uppercase; letter-spacing: 0.05em;
+            margin-top: 4px;
         }
 
-        /* --- СТИЛІ КАРТКИ МОЛЕКУЛИ --- */
+        /* =========================================
+           СТИЛІ КАРТКИ МОЛЕКУЛИ
+           ========================================= */
         .card-molecule {
             position: relative;
             background: var(--gold-front);
@@ -139,18 +173,22 @@
             overflow: hidden;
             display: flex; flex-direction: column;
             border: 1px solid #c9b675;
+            transition: all 0.3s ease;
         }
 
         .card-molecule .pattern-bg {
             position: absolute; inset: 0;
             background-image: radial-gradient(#d4b062 1px, transparent 1px);
             background-size: 10px 10px; opacity: 0.2;
+            pointer-events: none;
         }
 
         .card-molecule .card-border-double {
             position: absolute; inset: 4px;
             border: 3px double var(--green-classic);
-            border-radius: 8px; pointer-events: none; z-index: 2;
+            border-radius: 8px; 
+            pointer-events: none; 
+            z-index: 2;
         }
 
         .mol-points {
@@ -160,49 +198,66 @@
             font-size: 0.8rem; padding: 4px 10px;
             border-bottom-left-radius: 12px;
             border-left: 2px solid #fffdf5; border-bottom: 2px solid #fffdf5;
-            z-index: 10; box-shadow: -2px 2px 5px rgba(0,0,0,0.2);
+            z-index: 10; 
+            box-shadow: -2px 2px 5px rgba(0,0,0,0.2);
         }
 
         .mol-formula {
-            margin-top: 25px;
+            margin-top: 30px;
             font-family: 'Playfair Display', serif;
-            font-weight: 900; font-size: 2rem;
+            font-weight: 900; font-size: 1.8rem;
             color: #1a1a1a; text-align: center;
-            text-shadow: 2px 2px 0px rgba(255,255,255,0.5);
+            text-shadow: 1px 1px 0px rgba(255,255,255,0.5);
             z-index: 5;
+            line-height: 1.2;
         }
 
         .mol-names {
-            text-align: center; margin-top: auto; margin-bottom: 10px; z-index: 5;
+            text-align: center; margin-top: auto; margin-bottom: 12px; z-index: 5;
         }
         .mol-name-trivial {
             font-family: 'Montserrat', sans-serif; font-weight: 800;
-            text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em;
+            text-transform: uppercase; font-size: 0.65rem; letter-spacing: 0.05em;
             color: #3e2723;
         }
 
         .mol-recipe {
-            background: rgba(0, 100, 0, 0.08);
-            padding: 6px;
-            display: flex; justify-content: center; gap: 4px;
-            border-top: 1px solid rgba(0, 100, 0, 0.2);
+            background: rgba(0, 100, 0, 0.05);
+            padding: 8px;
+            display: flex; justify-content: center; gap: 4px; flex-wrap: wrap;
+            border-top: 1px solid rgba(0, 100, 0, 0.15);
             z-index: 5;
+            min-height: 40px;
+            align-items: center;
         }
+        
         .atom-dot {
-            width: 18px; height: 18px; border-radius: 50%;
+            width: 20px; height: 20px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 8px;
+            font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 9px;
             box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-            border: 1px solid rgba(255,255,255,0.5);
+            border: 1px solid rgba(255,255,255,0.6);
         }
 
-        /* --- АНІМАЦІЇ UI --- */
+        /* =========================================
+           АНІМАЦІЇ ТА ОВЕРЛЕЇ
+           ========================================= */
         #error-overlay {
             display: none; position: fixed; inset: 0; background: white; z-index: 9999; padding: 20px; color: red;
+        }
+        
+        .animate-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
+    <!-- Блок відображення критичних помилок -->
     <div id="error-overlay">
         <h2 class="text-xl font-bold mb-2">⚠️ Критична помилка:</h2>
         <pre id="error-msg" class="whitespace-pre-wrap font-mono text-xs"></pre>
@@ -222,7 +277,7 @@
         import React, { useState, useEffect, useMemo } from 'https://esm.sh/react@18.2.0';
         import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
         
-        // Firebase Imports
+        // Імпорт Firebase модулів
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { 
             getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, 
@@ -232,13 +287,15 @@
             getAuth, signInAnonymously, onAuthStateChanged 
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         
-        // Icons
+        // Імпорт іконок Lucide
         import { 
             FlaskConical, ArrowRightLeft, Crown, LogOut, Loader2, X, 
-            History, Trash2, RefreshCcw, CheckCircle2, Menu
+            History, Trash2, RefreshCcw, CheckCircle2, Menu, Plus, Minus, User, Info
         } from 'https://esm.sh/lucide-react@0.263.1';
 
-        // --- КОНФІГУРАЦІЯ FIREBASE ---
+        // ==========================================
+        // НАЛАШТУВАННЯ FIREBASE
+        // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyAEownlzJ0AqrnAku7Cw208N2DRLQHdD6Y",
             authDomain: "synthesis-game-f9684.firebaseapp.com",
@@ -248,12 +305,12 @@
             appId: "1:257683012244:web:c7aee7e27c929ceb5b9281"
         };
 
-        // Ініціалізація
         let app, auth, db;
         try {
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
+            console.log("Firebase initialized");
         } catch (e) {
             console.error("Firebase init error", e);
         }
@@ -261,18 +318,21 @@
         const appId = 'synthesis-game';
         const WINNING_SCORE = 50;
 
-        // --- ДОВІДНИК ЕЛЕМЕНТІВ ---
-        // Використовуємо CSS змінні для кольорів з вашого файлу
+        // ==========================================
+        // БАЗА ДАНИХ ГРИ (ЕЛЕМЕНТИ ТА МОЛЕКУЛИ)
+        // ==========================================
+        
+        // Маси округлені до цілих, окрім Cl (35.5)
         const ELEMENTS = {
-            'H':  { m: 1.01,  name: 'Гідроген' },
-            'O':  { m: 16.00, name: 'Оксиген' },
-            'C':  { m: 12.01, name: 'Карбон' },
-            'N':  { m: 14.01, name: 'Нітроген' },
-            'Na': { m: 22.99, name: 'Натрій' },
-            'Cl': { m: 35.45, name: 'Хлор' },
-            'Ca': { m: 40.08, name: 'Кальцій' },
-            'S':  { m: 32.07, name: 'Сульфур' },
-            'Si': { m: 28.09, name: 'Силіцій' },
+            'H':  { m: 1,  name: 'Гідроген' },
+            'O':  { m: 16, name: 'Оксиген' },
+            'C':  { m: 12, name: 'Карбон' },
+            'N':  { m: 14, name: 'Нітроген' },
+            'Na': { m: 23, name: 'Натрій' },
+            'Cl': { m: 35.5, name: 'Хлор' }, // Єдиний виняток
+            'Ca': { m: 40, name: 'Кальцій' },
+            'S':  { m: 32, name: 'Сульфур' },
+            'Si': { m: 28, name: 'Силіцій' },
         };
 
         const ELEMENT_DISTRIBUTION = {
@@ -280,7 +340,7 @@
         };
 
         const MOLECULES_LIST = [
-            // Прості
+            // Прості (низька вартість)
             { id: 'h2o',     f: 'H₂O',      name: 'Вода',              vp: 3, count: 6, req: { 'H': 2, 'O': 1 } },
             { id: 'co',      f: 'CO',       name: 'Чадний газ',        vp: 4, count: 4, req: { 'C': 1, 'O': 1 } },
             { id: 'hcl',     f: 'HCl',      name: 'Хлоридна к-та',     vp: 6, count: 3, req: { 'H': 1, 'Cl': 1 } },
@@ -293,7 +353,7 @@
             { id: 'h2o2',    f: 'H₂O₂',     name: 'Перекис водню',     vp: 4, count: 2, req: { 'H': 2, 'O': 2 } },
             { id: 'so2',     f: 'SO₂',      name: 'Сірчистий газ',     vp: 4, count: 2, req: { 'S': 1, 'O': 2 } },
             { id: 'sio2',    f: 'SiO₂',     name: 'Пісок',             vp: 10, count: 2, req: { 'Si': 1, 'O': 2 } },
-            // Складні
+            // Складні (висока вартість)
             { id: 'caoh2',   f: 'Ca(OH)₂',  name: 'Гашене вапно',      vp: 7, count: 2, req: { 'Ca': 1, 'O': 2, 'H': 2 } },
             { id: 'h2so4',   f: 'H₂SO₄',    name: 'Сульфатна к-та',    vp: 12, count: 1, req: { 'H': 2, 'S': 1, 'O': 4 } },
             { id: 'caco3',   f: 'CaCO₃',    name: 'Крейда',            vp: 9, count: 3, req: { 'Ca': 1, 'C': 1, 'O': 3 } },
@@ -301,7 +361,9 @@
             { id: 'na2co3',  f: 'Na₂CO₃',   name: 'Кальцинована сода', vp: 12, count: 3, req: { 'Na': 2, 'C': 1, 'O': 3 } },
         ];
 
-        // --- ЛОГІКА ТА УТИЛІТИ ---
+        // ==========================================
+        // ДОПОМІЖНІ ФУНКЦІЇ ЛОГІКИ
+        // ==========================================
 
         const shuffleArray = (array) => {
             let arr = [...array];
@@ -333,7 +395,6 @@
         const checkRecipe = (hand, recipe) => {
             const handCounts = {};
             hand.forEach(el => handCounts[el] = (handCounts[el] || 0) + 1);
-            
             for (const [el, needed] of Object.entries(recipe)) {
                 if (!handCounts[el] || handCounts[el] < needed) return false;
             }
@@ -348,21 +409,24 @@
             return list;
         };
 
-        // --- НОВІ КОМПОНЕНТИ (Дизайн Catan Style) ---
+        // ==========================================
+        // REACT КОМПОНЕНТИ (UI)
+        // ==========================================
 
-        // 1. Картка Елемента
+        // 1. КАРТКА ЕЛЕМЕНТА
         const ElementCard = ({ type, onClick, selected = false, style, overlap = false, mini = false }) => {
             const data = ELEMENTS[type] || { m: '?', name: type };
-
-            // Визначаємо стилі на основі типу елемента (CSS змінні)
-            const cardStyle = {
-                background: `var(--bg-${type})`,
-                color: `var(--main-${type})`
-            };
             
-            // Стиль для кутових цифр (вони мають бути того ж кольору, що й головний текст)
-            const textStyle = { color: `var(--main-${type})` };
+            // Динамічні стилі на основі типу елемента
+            const cardStyle = { 
+                background: `var(--bg-${type})`, 
+                color: `var(--main-${type})` 
+            };
+            const textStyle = { 
+                color: `var(--main-${type})` 
+            };
 
+            // Міні-версія для модальних вікон
             if (mini) {
                 return (
                     <div 
@@ -378,6 +442,7 @@
                 );
             }
 
+            // Повна версія для ігрового столу
             return (
                 <div 
                     onClick={onClick}
@@ -389,7 +454,6 @@
                         ${overlap ? '-ml-12 hover:ml-0' : ''}
                     `}
                 >
-                    <div className="pattern-bg"></div>
                     <div className="texture"></div>
                     <div className="card-border-inner"></div>
 
@@ -399,7 +463,7 @@
                     <div className="corner-circle bl" style={textStyle}>{data.m}</div>
                     <div className="corner-circle br" style={textStyle}>{type}</div>
 
-                    {/* Центр */}
+                    {/* Центр картки */}
                     <div className="center-ring" style={{color: `var(--main-${type})`}}>
                         <div className="symbol-main">{type}</div>
                         <div className="name-ua">{data.name}</div>
@@ -408,7 +472,7 @@
             );
         };
 
-        // 2. Картка Молекули
+        // 2. КАРТКА МОЛЕКУЛИ
         const MoleculeCard = ({ mol, canBuy, onBuy }) => {
             const atoms = getAtomsList(mol.req);
             
@@ -425,28 +489,26 @@
                     <div className="pattern-bg"></div>
                     <div className="card-border-double"></div>
 
-                    {/* Бали VP */}
+                    {/* VP (Бали) */}
                     <div className="mol-points">{mol.vp} VP</div>
 
                     {/* Формула */}
-                    <div className="mol-formula">
-                        {mol.f}
-                    </div>
+                    <div className="mol-formula">{mol.f}</div>
 
                     {/* Назва */}
                     <div className="mol-names">
                         <div className="mol-name-trivial">{mol.name}</div>
                     </div>
 
-                    {/* Рецепт (Атоми знизу) */}
+                    {/* Рецепт (атоми знизу) */}
                     <div className="mol-recipe">
                         {atoms.map((el, i) => (
                             <div 
                                 key={i} 
                                 className="atom-dot"
                                 style={{
-                                    background: `var(--bg-${el})`,
-                                    color: `var(--main-${el})`,
+                                    background: `var(--bg-${el})`, 
+                                    color: `var(--main-${el})`, 
                                     borderColor: `var(--main-${el})`
                                 }}
                             >
@@ -455,7 +517,7 @@
                         ))}
                     </div>
 
-                    {/* Оверлей покупки */}
+                    {/* Оверлей при доступності покупки */}
                     {canBuy && (
                         <div className="absolute inset-0 bg-green-900/20 flex items-center justify-center backdrop-blur-[1px] z-20 animate-pulse">
                             <div className="bg-green-700 text-white px-4 py-2 rounded-full shadow-xl font-black text-xs uppercase tracking-widest flex items-center gap-2 border-2 border-green-500">
@@ -467,19 +529,19 @@
             );
         };
 
-        // 3. Модальне вікно (Без змін)
+        // 3. УНІВЕРСАЛЬНЕ МОДАЛЬНЕ ВІКНО
         const Modal = ({ isOpen, onClose, title, children }) => {
             if (!isOpen) return null;
             return (
                 <div className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-[#fcfcfc] rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border-2 border-green-800">
-                        <div className="bg-green-900 px-6 py-4 border-b border-green-800 flex justify-between items-center">
+                    <div className="bg-[#fcfcfc] rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border-2 border-green-800 flex flex-col max-h-[90vh]">
+                        <div className="bg-green-900 px-6 py-4 border-b border-green-800 flex justify-between items-center shrink-0">
                             <h3 className="text-xl font-bold text-yellow-50 font-serif">{title}</h3>
                             <button onClick={onClose} className="p-2 hover:bg-green-800 rounded-full text-green-200 transition-colors">
                                 <X size={24}/>
                             </button>
                         </div>
-                        <div className="p-6 bg-[#f0fdf4]">
+                        <div className="p-6 bg-[#f0fdf4] overflow-y-auto">
                             {children}
                         </div>
                     </div>
@@ -487,62 +549,58 @@
             );
         };
 
-        // --- ГОЛОВНИЙ КЛАС ГРИ ---
+        // ==========================================
+        // ГОЛОВНИЙ КЛАС ГРИ (LOGIC + STATE)
+        // ==========================================
 
         const SynthesisGame = () => {
-            // Стан авторизації та кімнати
+            // --- СТАН (STATE) ---
             const [user, setUser] = useState(null);
             const [gameId, setGameId] = useState(localStorage.getItem('lastGameId') || '');
             const [gameData, setGameData] = useState(null);
             const [loading, setLoading] = useState(false);
             const [playerName, setPlayerName] = useState(localStorage.getItem('playerName') || '');
             
-            // Стан інтерфейсу
+            // Інтерфейс
             const [selectedCards, setSelectedCards] = useState([]); // Індекси карт в руці
             const [notification, setNotification] = useState(null);
             const [targetGameId, setTargetGameId] = useState('');
             
-            // Стан торгівлі
+            // Торгівля
             const [isTradeModalOpen, setTradeModalOpen] = useState(false);
             const [tradeTab, setTradeTab] = useState('bank'); // 'bank' | 'player'
-            const [tradeOffer, setTradeOffer] = useState({ give: [], want: '' });
+            // Для обміну з гравцями: масив бажаних карт
+            const [tradeWant, setTradeWant] = useState([]); 
 
-            // 1. Авторизація
+            // 1. АВТОРИЗАЦІЯ
             useEffect(() => {
                 const initAuth = async () => {
                     try {
                         await signInAnonymously(auth);
-                    } catch (error) {
-                        console.error("Auth Error:", error);
+                    } catch (e) {
                         showNotification('error', "Помилка входу в систему");
                     }
                 };
                 initAuth();
-                return onAuthStateChanged(auth, (u) => setUser(u));
+                return onAuthStateChanged(auth, setUser);
             }, []);
 
-            // 2. Синхронізація з БД
+            // 2. СИНХРОНІЗАЦІЯ ДАНИХ ГРИ (Realtime Listener)
             useEffect(() => {
                 if (!gameId || !db) return;
-                
-                const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId);
-                const unsubscribe = onSnapshot(gameRef, (snap) => {
+                const unsub = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId), (snap) => {
                     if (snap.exists()) {
                         setGameData(snap.data());
                     } else {
                         setGameData(null);
-                        if (gameId) showNotification('error', 'Кімнату не знайдено');
                         setGameId('');
+                        showNotification('error', 'Кімнату не знайдено або закрито');
                     }
-                }, (error) => {
-                    console.error("Sync Error:", error);
-                    showNotification('error', 'Втрачено зв\'язок з сервером');
                 });
-
-                return () => unsubscribe();
+                return () => unsub();
             }, [gameId]);
 
-            // --- Допоміжні змінні ---
+            // --- ДОПОМІЖНІ ЗМІННІ ---
             const myIndex = gameData?.players.findIndex(p => p.uid === user?.uid) ?? -1;
             const myPlayer = myIndex !== -1 ? gameData.players[myIndex] : null;
             const isMyTurn = gameData?.status === 'playing' && gameData?.turnIndex === myIndex;
@@ -552,51 +610,45 @@
             const isDiscardPhase = turnPhase === 'discard_force' && isMyTurn;
             const cardsToDiscard = isDiscardPhase && myPlayer ? Math.max(0, myPlayer.hand.length - 10) : 0;
 
-            // --- Функції сповіщень ---
+            // Функція для показу сповіщень
             const showNotification = (type, msg) => {
                 setNotification({ type, msg });
                 setTimeout(() => setNotification(null), 3000);
             };
 
-            // --- Ігрові Дії ---
+            // --- ОСНОВНІ ДІЇ ГРИ ---
 
             const createGame = async () => {
                 if (!playerName.trim()) return showNotification('error', "Введіть ваше ім'я!");
                 setLoading(true);
-                
                 localStorage.setItem('playerName', playerName);
-                const newGameId = Math.random().toString(36).substring(2, 6).toUpperCase();
                 
+                const gid = Math.random().toString(36).substring(2, 6).toUpperCase();
                 const molDeck = generateMoleculeDeck();
-                const initialMarket = molDeck.splice(0, 4); 
-
+                const market = molDeck.splice(0, 4); 
+                
                 const initialData = {
-                    id: newGameId,
+                    id: gid,
                     status: 'waiting', 
                     players: [{
                         uid: user.uid,
                         name: playerName,
                         hand: [],
                         score: 0,
-                        molecules: [] // ids of molecules
+                        molecules: []
                     }],
                     elementDeck: generateElementDeck(),
                     moleculeDeck: molDeck,
-                    market: initialMarket,
-                    discardPile: [], 
+                    market: market,
                     turnIndex: 0,
-                    turnPhase: 'draw', 
+                    turnPhase: 'draw',
                     activeTrade: null,
-                    logs: [{ text: `Алхімік ${playerName} відкрив лабораторію`, time: Date.now() }]
+                    logs: [{ text: `Алхімік ${playerName} відкрив нову лабораторію`, time: Date.now() }]
                 };
 
-                try {
-                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', newGameId), initialData);
-                    setGameId(newGameId);
-                    localStorage.setItem('lastGameId', newGameId);
-                } catch (e) {
-                    showNotification('error', 'Помилка створення гри');
-                }
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', gid), initialData);
+                setGameId(gid);
+                localStorage.setItem('lastGameId', gid);
                 setLoading(false);
             };
 
@@ -604,28 +656,29 @@
                 if (!playerName.trim()) return showNotification('error', "Введіть ваше ім'я!");
                 setLoading(true);
                 localStorage.setItem('playerName', playerName);
-
-                const codeUpper = code.toUpperCase().trim();
-                const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', codeUpper);
-
+                
+                const gid = code.toUpperCase().trim();
+                const ref = doc(db, 'artifacts', appId, 'public', 'data', 'games', gid);
+                
                 try {
-                    await runTransaction(db, async (transaction) => {
-                        const sfDoc = await transaction.get(gameRef);
-                        if (!sfDoc.exists()) throw "Кімнати не існує";
+                    await runTransaction(db, async (t) => {
+                        const s = await t.get(ref);
+                        if (!s.exists()) throw "Кімнати не існує";
+                        const d = s.data();
                         
-                        const data = sfDoc.data();
-                        if (data.status !== 'waiting') throw "Гра вже почалась";
-                        if (data.players.length >= 4) throw "Кімната переповнена";
-                        if (data.players.some(p => p.uid === user.uid)) return; // Вже в грі
-
-                        const newPlayer = { uid: user.uid, name: playerName, hand: [], score: 0, molecules: [] };
-                        transaction.update(gameRef, {
-                            players: arrayUnion(newPlayer),
-                            logs: arrayUnion({ text: `${playerName} приєднався до експерименту`, time: Date.now() })
-                        });
+                        if (d.status !== 'waiting') throw "Гра вже почалась";
+                        if (d.players.length >= 4) throw "Кімната переповнена";
+                        
+                        // Якщо гравець не в списку, додаємо
+                        if (!d.players.some(p => p.uid === user.uid)) {
+                            t.update(ref, {
+                                players: arrayUnion({ uid: user.uid, name: playerName, hand: [], score: 0, molecules: [] }),
+                                logs: arrayUnion({ text: `${playerName} приєднався до експерименту`, time: Date.now() })
+                            });
+                        }
                     });
-                    setGameId(codeUpper);
-                    localStorage.setItem('lastGameId', codeUpper);
+                    setGameId(gid);
+                    localStorage.setItem('lastGameId', gid);
                 } catch (e) {
                     showNotification('error', typeof e === 'string' ? e : e.message);
                 }
@@ -633,19 +686,14 @@
             };
 
             const startGame = async () => {
-                const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId);
-                const newDeck = [...gameData.elementDeck];
+                const deck = [...gameData.elementDeck];
+                // Роздаємо по 5 карт
+                const players = gameData.players.map(p => ({ ...p, hand: deck.splice(0, 5) }));
                 
-                // Роздача по 5 карт
-                const updatedPlayers = gameData.players.map(p => ({ 
-                    ...p, 
-                    hand: newDeck.splice(0, 5) 
-                }));
-
-                await updateDoc(gameRef, {
-                    status: 'playing', 
-                    elementDeck: newDeck, 
-                    players: updatedPlayers, 
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId), {
+                    status: 'playing',
+                    elementDeck: deck,
+                    players: players,
                     turnPhase: 'draw',
                     logs: arrayUnion({ text: 'Експеримент почався! Роздано по 5 елементів.', time: Date.now() })
                 });
@@ -654,22 +702,22 @@
             const drawCards = async () => {
                 if (!isMyTurn || turnPhase !== 'draw') return;
                 
-                let newDeck = [...gameData.elementDeck];
-                if (newDeck.length < 2) {
+                let deck = [...gameData.elementDeck];
+                if (deck.length < 2) {
                      showNotification('error', 'Колода елементів вичерпана!'); 
+                     // Тут можна додати логіку перетасовки скиду, якщо буде реалізовано
                      return; 
                 }
 
-                const drawn = newDeck.splice(0, 2);
-                const updatedPlayers = [...gameData.players];
-                const newHand = [...myPlayer.hand, ...drawn];
-                updatedPlayers[myIndex].hand = newHand;
+                const drawn = deck.splice(0, 2);
+                const players = [...gameData.players];
+                players[myIndex].hand.push(...drawn);
                 
-                const nextPhase = newHand.length > 10 ? 'discard_force' : 'action';
+                const nextPhase = players[myIndex].hand.length > 10 ? 'discard_force' : 'action';
 
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId), {
-                    elementDeck: newDeck,
-                    players: updatedPlayers,
+                    elementDeck: deck,
+                    players: players,
                     turnPhase: nextPhase,
                     logs: arrayUnion({ text: `${myPlayer.name} отримав нові елементи`, time: Date.now() })
                 });
@@ -677,64 +725,60 @@
 
             const discardCards = async () => {
                 if (selectedCards.length !== cardsToDiscard) {
-                    showNotification('error', `Необхідно скинути рівно ${cardsToDiscard} карт!`);
-                    return;
+                    return showNotification('error', `Необхідно скинути рівно ${cardsToDiscard} карт!`);
                 }
                 
-                let newHand = [...myPlayer.hand];
-                selectedCards.sort((a,b) => b-a).forEach(idx => {
-                    newHand.splice(idx, 1);
-                });
+                let hand = [...myPlayer.hand];
+                // Видаляємо карти (сортуємо індекси за спаданням)
+                selectedCards.sort((a,b)=>b-a).forEach(i => hand.splice(i, 1));
                 
-                const updatedPlayers = [...gameData.players];
-                updatedPlayers[myIndex].hand = newHand;
+                const players = [...gameData.players];
+                players[myIndex].hand = hand;
 
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId), {
-                    players: updatedPlayers,
-                    turnPhase: 'action', 
+                    players: players,
+                    turnPhase: 'action',
                     logs: arrayUnion({ text: `${myPlayer.name} очистив інвентар`, time: Date.now() })
                 });
                 setSelectedCards([]);
             };
 
-            const synthesizeMolecule = async (molecule) => {
-                if (!checkRecipe(myPlayer.hand, molecule.req)) return;
+            const synthesizeMolecule = async (mol) => {
+                if (!checkRecipe(myPlayer.hand, mol.req)) return;
 
-                let newHand = [...myPlayer.hand];
-                Object.entries(molecule.req).forEach(([el, count]) => {
-                    for(let i=0; i<count; i++) {
-                        const idx = newHand.indexOf(el);
-                        if (idx > -1) {
-                            newHand.splice(idx, 1);
-                        }
+                let hand = [...myPlayer.hand];
+                // Видаляємо ресурси
+                Object.entries(mol.req).forEach(([el, cnt]) => {
+                    for(let i=0; i<cnt; i++) {
+                        const idx = hand.indexOf(el);
+                        if (idx > -1) hand.splice(idx, 1);
                     }
                 });
 
-                const updatedPlayers = [...gameData.players];
-                updatedPlayers[myIndex] = {
+                const players = [...gameData.players];
+                players[myIndex] = {
                     ...myPlayer,
-                    hand: newHand,
-                    molecules: [...myPlayer.molecules, molecule.id],
-                    score: myPlayer.score + molecule.vp
+                    hand: hand,
+                    molecules: [...myPlayer.molecules, mol.id],
+                    score: myPlayer.score + mol.vp
                 };
 
-                const newMarket = [...gameData.market];
-                const marketIndex = newMarket.findIndex(m => m.uniqueId === molecule.uniqueId);
-                newMarket.splice(marketIndex, 1);
+                // Оновлюємо ринок
+                const market = [...gameData.market];
+                const marketIdx = market.findIndex(m => m.uniqueId === mol.uniqueId);
+                market.splice(marketIdx, 1);
                 
-                const newDeck = [...gameData.moleculeDeck];
-                if (newDeck.length > 0) {
-                    newMarket.push(newDeck.shift());
-                }
+                const molDeck = [...gameData.moleculeDeck];
+                if (molDeck.length > 0) market.push(molDeck.shift());
 
-                const status = updatedPlayers[myIndex].score >= WINNING_SCORE ? 'finished' : 'playing';
+                const status = players[myIndex].score >= WINNING_SCORE ? 'finished' : 'playing';
 
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId), {
-                    players: updatedPlayers,
-                    status,
-                    market: newMarket,
-                    moleculeDeck: newDeck,
-                    logs: arrayUnion({ text: `${myPlayer.name} синтезував ${molecule.name} (+${molecule.vp} VP)`, time: Date.now() })
+                    players: players,
+                    market: market,
+                    moleculeDeck: molDeck,
+                    status: status,
+                    logs: arrayUnion({ text: `${myPlayer.name} синтезував ${mol.name} (+${mol.vp} VP)`, time: Date.now() })
                 });
             };
 
@@ -743,176 +787,205 @@
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId), {
                     turnIndex: nextIndex,
                     turnPhase: 'draw',
-                    activeTrade: null, 
-                    logs: arrayUnion({ text: `Хід переходить до ${gameData.players[nextIndex].name}`, time: Date.now() })
+                    activeTrade: null, // Скидаємо будь-які активні пропозиції
+                    logs: arrayUnion({ text: `Хід переходить далі до ${gameData.players[nextIndex].name}`, time: Date.now() })
                 });
             };
 
-            // --- ТОРГІВЛЯ ---
+            // ==========================================
+            // НОВА ЛОГІКА ТОРГІВЛІ (Advanced Trade)
+            // ==========================================
 
+            const addToTradeWant = (el) => {
+                setTradeWant(prev => [...prev, el]);
+            };
+
+            const removeFromTradeWant = (idx) => {
+                setTradeWant(prev => prev.filter((_, i) => i !== idx));
+            };
+
+            // 1. Обмін з БАНКОМ (3:1)
             const executeBankTrade = async () => {
                 if (selectedCards.length !== 3) {
-                    showNotification('error', "Оберіть рівно 3 карти для обміну!");
-                    return;
+                    return showNotification('error', "Для банку оберіть рівно 3 карти!");
                 }
-                const firstCard = myPlayer.hand[selectedCards[0]];
-                const allSame = selectedCards.every(idx => myPlayer.hand[idx] === firstCard);
-                
-                if (!allSame) {
-                    showNotification('error', "Карти повинні бути однаковими для обміну з банком!");
-                    return;
+                const first = myPlayer.hand[selectedCards[0]];
+                if (!selectedCards.every(i => myPlayer.hand[i] === first)) {
+                    return showNotification('error', "Для банку карти мають бути однакові!");
                 }
-                
-                if (!tradeOffer.want) {
-                    showNotification('error', "Оберіть, що хочете отримати!");
-                    return;
+                if (tradeWant.length !== 1) {
+                    return showNotification('error', "Оберіть рівно 1 карту для отримання!");
                 }
 
-                let newHand = [...myPlayer.hand];
-                selectedCards.sort((a,b) => b-a).forEach(idx => newHand.splice(idx, 1));
-                newHand.push(tradeOffer.want);
+                let hand = [...myPlayer.hand];
+                selectedCards.sort((a,b)=>b-a).forEach(i => hand.splice(i, 1));
+                hand.push(tradeWant[0]);
 
-                const updatedPlayers = [...gameData.players];
-                updatedPlayers[myIndex].hand = newHand;
+                const players = [...gameData.players];
+                players[myIndex].hand = hand;
 
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId), {
-                    players: updatedPlayers,
-                    logs: arrayUnion({ text: `${myPlayer.name} обміняв 3 ${firstCard} на ${tradeOffer.want}`, time: Date.now() })
+                    players: players,
+                    logs: arrayUnion({ text: `${myPlayer.name} обміняв 3 ${first} на ${tradeWant[0]} (Банк)`, time: Date.now() })
                 });
                 
                 setTradeModalOpen(false);
                 setSelectedCards([]);
-                setTradeOffer({ give: [], want: '' });
+                setTradeWant([]);
             };
 
+            // 2. Створення пропозиції для ГРАВЦІВ
             const createPlayerTrade = async () => {
                 if (selectedCards.length === 0) {
-                    showNotification('error', "Оберіть карти, які віддаєте!");
-                    return;
+                    return showNotification('error', "Оберіть карти, які ви віддаєте!");
                 }
-                if (!tradeOffer.want) {
-                    showNotification('error', "Оберіть карту, яку хочете!");
-                    return;
+                if (tradeWant.length === 0) {
+                    return showNotification('error', "Оберіть карти, які ви хочете!");
                 }
-
-                const giveCards = selectedCards.map(idx => myPlayer.hand[idx]);
+                
+                const giveCards = selectedCards.map(i => myPlayer.hand[i]);
                 
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId), {
                     activeTrade: {
                         initiator: user.uid,
                         give: giveCards,
-                        want: tradeOffer.want,
-                        giveIndices: selectedCards 
+                        want: tradeWant
                     },
-                    logs: arrayUnion({ text: `${myPlayer.name} пропонує обмін: ${giveCards.join(', ')} на ${tradeOffer.want}`, time: Date.now() })
+                    logs: arrayUnion({ text: `${myPlayer.name} пропонує обмін: [${giveCards.join(', ')}] на [${tradeWant.join(', ')}]`, time: Date.now() })
                 });
+
                 setTradeModalOpen(false);
                 setSelectedCards([]);
+                setTradeWant([]);
             };
 
+            // 3. Прийняття пропозиції (Іншим гравцем)
             const acceptActiveTrade = async () => {
-                const trade = gameData.activeTrade;
-                if (!trade) return;
+                const tr = gameData.activeTrade;
+                if (!tr) return;
+                
+                // Перевіряємо, чи має гравець (Acceptor) карти, які хоче Ініціатор (tr.want)
+                let acceptorHand = [...myPlayer.hand];
+                let missing = [];
+                
+                // Рахуємо карти
+                const handCounts = {};
+                acceptorHand.forEach(c => handCounts[c] = (handCounts[c]||0) + 1);
+                
+                const neededCounts = {};
+                tr.want.forEach(c => neededCounts[c] = (neededCounts[c]||0) + 1);
 
-                const myRequiredCardIndex = myPlayer.hand.indexOf(trade.want);
-                if (myRequiredCardIndex === -1) {
-                    showNotification('error', `У вас немає елементу ${trade.want} для обміну!`);
-                    return;
+                for (let el in neededCounts) {
+                    if (!handCounts[el] || handCounts[el] < neededCounts[el]) {
+                        return showNotification('error', `У вас не вистачає карти: ${el}`);
+                    }
                 }
 
-                const initiatorIndex = gameData.players.findIndex(p => p.uid === trade.initiator);
-                const initiator = gameData.players[initiatorIndex];
+                // Виконуємо обмін
+                const initIdx = gameData.players.findIndex(p => p.uid === tr.initiator);
+                const initiator = gameData.players[initIdx];
+                let initiatorHand = [...initiator.hand];
 
-                const newMyHand = [...myPlayer.hand];
-                const newInitHand = [...initiator.hand];
-
-                newMyHand.splice(myRequiredCardIndex, 1);
-                newInitHand.push(trade.want);
-
-                trade.give.forEach(cardType => {
-                    const idx = newInitHand.indexOf(cardType);
-                    if (idx > -1) newInitHand.splice(idx, 1);
-                    newMyHand.push(cardType);
+                // Acceptor віддає те, що хотів Initiator
+                tr.want.forEach(card => {
+                    const idx = acceptorHand.indexOf(card);
+                    if (idx > -1) acceptorHand.splice(idx, 1);
                 });
 
-                const updatedPlayers = [...gameData.players];
-                updatedPlayers[myIndex].hand = newMyHand;
-                updatedPlayers[initiatorIndex].hand = newInitHand;
+                // Initiator отримує те, що хотів
+                initiatorHand.push(...tr.want);
+
+                // Initiator віддає те, що пропонував
+                tr.give.forEach(card => {
+                    const idx = initiatorHand.indexOf(card);
+                    if (idx > -1) initiatorHand.splice(idx, 1);
+                    acceptorHand.push(card);
+                });
+
+                const players = [...gameData.players];
+                players[myIndex].hand = acceptorHand;
+                players[initIdx].hand = initiatorHand;
 
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId), {
-                    players: updatedPlayers,
+                    players: players,
                     activeTrade: null,
-                    logs: arrayUnion({ text: `Обмін між ${initiator.name} та ${myPlayer.name} успішний!`, time: Date.now() })
+                    logs: arrayUnion({ text: `Обмін успішно завершено між ${initiator.name} та ${myPlayer.name}`, time: Date.now() })
                 });
             };
 
             const cancelActiveTrade = async () => {
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId), {
+                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId), {
                     activeTrade: null,
                     logs: arrayUnion({ text: `${myPlayer.name} скасував пропозицію обміну`, time: Date.now() })
                 });
             };
 
-            const handleCardClick = (idx) => {
-                if (!isMyTurn) return;
+            // Перевірка: чи можу я бачити кнопку "Прийняти"
+            const canIAcceptTrade = (trade) => {
+                if (!trade || !myPlayer) return false;
                 
-                if (turnPhase === 'discard_force' || turnPhase === 'action') {
-                    setSelectedCards(prev => prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]);
+                const myCounts = {}; 
+                myPlayer.hand.forEach(c => myCounts[c] = (myCounts[c]||0)+1);
+                
+                const wantCounts = {}; 
+                trade.want.forEach(c => wantCounts[c] = (wantCounts[c]||0)+1);
+                
+                for (let el in wantCounts) {
+                    if (!myCounts[el] || myCounts[el] < wantCounts[el]) return false;
                 }
+                return true;
             };
 
-            // --- РЕНДЕРИНГ UI ---
+
+            // ==========================================
+            // РЕНДЕРИНГ (UI)
+            // ==========================================
 
             if (loading) {
                 return <div className="h-screen w-full bg-[#0d1f14] flex items-center justify-center"><Loader2 className="animate-spin text-yellow-500" size={64}/></div>;
             }
 
-            // 1. ЕКРАН ЛОБІ
+            // ЕКРАН ЛОБІ
             if (!gameData) {
                 return (
                     <div className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center">
                         <div className="bg-[#0d1f14]/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl w-full max-w-md border-2 border-yellow-700">
-                            <div className="text-center mb-8">
-                                <h1 className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 to-yellow-600 mb-2 drop-shadow-lg" style={{fontFamily: 'Playfair Display'}}>СИНТЕЗ</h1>
-                                <p className="text-green-200 font-serif tracking-widest text-sm uppercase">Elite Chemistry</p>
-                            </div>
+                            <h1 className="text-6xl font-black text-center text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 to-yellow-600 mb-8 font-serif">СИНТЕЗ</h1>
                             
-                            <div className="space-y-4">
+                            <input 
+                                type="text" 
+                                placeholder="Ім'я Алхіміка" 
+                                className="w-full p-4 bg-[#06120a] border-2 border-green-800 rounded-xl mb-4 text-yellow-100 font-bold text-center font-serif placeholder-green-800 focus:border-yellow-500 outline-none transition-colors"
+                                value={playerName}
+                                onChange={e => setPlayerName(e.target.value)}
+                            />
+                            
+                            <button onClick={createGame} className="w-full py-4 bg-green-800 hover:bg-green-700 text-white rounded-xl font-bold mb-4 font-serif tracking-widest border-b-4 border-green-950 active:border-b-0 active:translate-y-1 transition-all">
+                                СТВОРИТИ ГРУ
+                            </button>
+                            
+                            <div className="flex gap-2">
                                 <input 
                                     type="text" 
-                                    placeholder="Ім'я Алхіміка" 
-                                    className="w-full p-4 bg-[#06120a] border-2 border-green-800 rounded-xl focus:border-yellow-500 focus:outline-none transition-colors text-yellow-100 font-bold text-lg text-center placeholder-green-800 shadow-inner font-serif"
-                                    value={playerName}
-                                    onChange={e => setPlayerName(e.target.value)}
+                                    placeholder="КОД КІМНАТИ" 
+                                    className="w-2/3 p-4 bg-[#06120a] border-2 border-green-800 rounded-xl font-mono text-center text-yellow-100 font-bold tracking-[0.2em] outline-none"
+                                    value={targetGameId}
+                                    onChange={e => setTargetGameId(e.target.value)}
                                 />
-                                
-                                <button onClick={createGame} className="group w-full py-4 bg-gradient-to-r from-green-800 to-green-700 hover:from-green-700 hover:to-green-600 text-white rounded-xl font-bold text-lg shadow-lg border-b-4 border-green-950 active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center gap-2 font-serif tracking-widest">
-                                    <FlaskConical className="group-hover:rotate-12 transition-transform" /> СТВОРИТИ
+                                <button onClick={() => joinGame(targetGameId)} className="flex-1 bg-yellow-700 hover:bg-yellow-600 text-white rounded-xl font-bold border-b-4 border-yellow-900 active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center">
+                                    <ArrowRightLeft />
                                 </button>
-                                
-                                <div className="flex gap-2">
-                                    <input 
-                                        type="text" 
-                                        placeholder="КОД" 
-                                        className="w-2/3 p-4 bg-[#06120a] border-2 border-green-800 rounded-xl font-mono text-center uppercase text-yellow-100 font-bold tracking-[0.2em] outline-none focus:border-yellow-500"
-                                        value={targetGameId}
-                                        onChange={e => setTargetGameId(e.target.value)}
-                                    />
-                                    <button onClick={() => joinGame(targetGameId)} className="flex-1 bg-yellow-700 hover:bg-yellow-600 text-white rounded-xl font-bold shadow-lg border-b-4 border-yellow-900 active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center">
-                                        <ArrowRightLeft />
-                                    </button>
-                                </div>
                             </div>
                         </div>
                     </div>
                 );
             }
 
-            // 2. ЕКРАН ОЧІКУВАННЯ
+            // ЕКРАН ОЧІКУВАННЯ
             if (gameData.status === 'waiting') {
                 return (
                     <div className="min-h-screen bg-[#0d1f14] flex flex-col items-center justify-center p-4">
-                        <div className="bg-[#1a3c28] p-8 rounded-3xl shadow-2xl w-full max-w-lg text-center border-4 border-yellow-600 relative overflow-hidden">
+                        <div className="bg-[#1a3c28] p-8 rounded-3xl border-4 border-yellow-600 text-center max-w-lg w-full shadow-2xl">
                             <h2 className="text-green-300 font-bold mb-2 uppercase tracking-wide text-xs">Код доступу</h2>
                             <div className="text-6xl font-mono font-black text-yellow-400 tracking-[0.15em] mb-8 bg-[#0d1f14] py-6 rounded-xl border border-green-800 select-all shadow-inner">
                                 {gameId}
@@ -921,7 +994,7 @@
                             <div className="space-y-3 mb-8 text-left">
                                 {gameData.players.map((p, i) => (
                                     <div key={i} className="flex items-center gap-4 p-4 bg-[#0d1f14] border border-green-800 rounded-2xl shadow-lg">
-                                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-700 flex items-center justify-center text-black font-black text-xl shadow-md border-2 border-yellow-300 font-serif">
+                                        <div className="w-12 h-12 rounded-full bg-yellow-600 flex items-center justify-center font-serif font-bold text-black border-2 border-yellow-400">
                                             {p.name[0]}
                                         </div>
                                         <div className="font-bold text-xl text-green-100 font-serif">{p.name}</div>
@@ -936,7 +1009,7 @@
                             </div>
 
                             {isHost ? (
-                                <button onClick={startGame} className="w-full py-4 bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-black rounded-xl font-black text-xl shadow-[0_0_20px_rgba(234,179,8,0.4)] transition-all active:scale-95 flex items-center justify-center gap-3 font-serif">
+                                <button onClick={startGame} className="w-full py-4 bg-yellow-600 hover:bg-yellow-500 text-black rounded-xl font-black text-xl font-serif shadow-[0_0_20px_rgba(234,179,8,0.4)] transition-all active:scale-95">
                                     ПОЧАТИ ГРУ
                                 </button>
                             ) : (
@@ -949,45 +1022,31 @@
                 );
             }
 
-            // 3. ОСНОВНИЙ ЕКРАН ГРИ
+            // ОСНОВНИЙ ЕКРАН ГРИ
             return (
                 <div className="h-screen flex flex-col relative overflow-hidden">
                     
                     {/* ВЕРХНЯ ПАНЕЛЬ */}
-                    <header className="bg-[#0f291a] shadow-xl z-50 shrink-0 border-b border-green-800">
-                        <div className="flex justify-between items-center px-4 py-2 bg-[#06120a]/50 backdrop-blur">
-                            <div className="flex items-center gap-2">
-                                <span className="text-yellow-500 font-black font-serif tracking-widest text-lg">СИНТЕЗ</span>
-                                <span className="text-[10px] bg-green-900 text-green-300 px-2 py-0.5 rounded border border-green-700">
-                                    Раунд {Math.floor(gameData.turnIndex / gameData.players.length) + 1}
-                                </span>
-                            </div>
-                            <button onClick={() => {if(confirm('Вийти?')) setGameId('')}} className="text-green-600 hover:text-red-400">
-                                <LogOut size={20}/>
-                            </button>
+                    <header className="bg-[#0f291a] shadow-xl z-50 shrink-0 border-b border-green-800 px-4 py-2 flex justify-between items-center backdrop-blur-md">
+                        <div className="flex items-center gap-2">
+                            <span className="text-yellow-500 font-black font-serif text-lg tracking-widest">СИНТЕЗ</span>
+                            <span className="text-[10px] bg-green-900 text-green-300 px-2 py-0.5 rounded border border-green-700 font-mono">
+                                R: {Math.floor(gameData.turnIndex / gameData.players.length) + 1}
+                            </span>
                         </div>
-
-                        {/* Список гравців */}
-                        <div className="flex overflow-x-auto p-3 gap-3 scrollbar-hide bg-[#0d1f14]">
+                        
+                        {/* Список гравців зверху */}
+                        <div className="flex overflow-x-auto gap-2 ml-4 scrollbar-hide flex-1 justify-end">
                             {gameData.players.map((p, i) => {
-                                const isActive = gameData.turnIndex === i;
-                                const isMe = p.uid === user.uid;
+                                const active = gameData.turnIndex === i;
                                 return (
-                                    <div key={i} className={`
-                                        flex-shrink-0 flex items-center gap-3 px-4 py-2 rounded-lg border transition-all min-w-[140px]
-                                        ${isActive ? 'bg-yellow-900/40 border-yellow-600 shadow-md' : 'bg-[#06120a] border-green-900 opacity-60'}
-                                    `}>
-                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold font-serif ${isActive ? 'bg-yellow-500 text-black' : 'bg-green-800 text-green-300'}`}>
+                                    <div key={i} className={`flex items-center gap-2 px-3 py-1 rounded-lg border min-w-[110px] transition-all ${active ? 'bg-yellow-900/40 border-yellow-600 shadow-md' : 'bg-[#06120a] border-green-900 opacity-60'}`}>
+                                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${active ? 'bg-yellow-500 text-black' : 'bg-green-800 text-green-300'}`}>
                                             {p.name[0]}
                                         </div>
-                                        <div className="flex flex-col">
-                                            <span className={`text-xs font-bold leading-none mb-1 font-serif ${isActive ? 'text-yellow-100' : 'text-green-500'}`}>
-                                                {p.name}
-                                            </span>
-                                            <div className="flex gap-2 text-[10px] font-mono">
-                                                <span className="text-yellow-500">VP: {p.score}</span>
-                                                <span className="text-green-400">Card: {p.hand.length}</span>
-                                            </div>
+                                        <div className="flex flex-col leading-none">
+                                            <div className={`font-bold text-xs mb-0.5 ${active ? 'text-yellow-100' : 'text-green-500'}`}>{p.name}</div>
+                                            <div className="text-[10px] text-yellow-500 font-mono">VP: {p.score}</div>
                                         </div>
                                     </div>
                                 );
@@ -995,44 +1054,61 @@
                         </div>
                     </header>
 
-                    {/* АЛЕРТ ТОРГІВЛІ */}
-                    {gameData.activeTrade && gameData.activeTrade.initiator !== user.uid && (
-                        <div className="absolute top-32 left-0 right-0 z-[60] px-4 animate-in slide-in-from-top duration-500">
-                            <div className="bg-[#f0fdf4] border-l-8 border-green-600 rounded-lg p-4 shadow-2xl flex flex-col items-center gap-3 text-black">
+                    {/* АЛЕРТ ВХІДНОЇ ТОРГІВЛІ (ДЛЯ ІНШИХ ГРАВЦІВ) */}
+                    {gameData.activeTrade && gameData.activeTrade.initiator !== user.uid && canIAcceptTrade(gameData.activeTrade) && (
+                        <div className="absolute top-20 left-4 right-4 z-[60] animate-in slide-in-from-top duration-500 pointer-events-auto">
+                            <div className="bg-[#f0fdf4] border-l-8 border-green-600 rounded-lg p-4 shadow-2xl flex flex-col gap-3 text-black max-w-lg mx-auto">
                                 <div className="font-bold text-center text-sm font-serif">
-                                    <span className="text-green-800 uppercase text-xs block mb-1">Пропозиція обміну</span>
-                                    {gameData.players.find(p=>p.uid===gameData.activeTrade.initiator)?.name} пропонує <br/>
-                                    <span className="font-black bg-yellow-200 px-2 rounded mx-1">{gameData.activeTrade.give.join(', ')}</span> 
-                                    за 
-                                    <span className="font-black bg-green-200 px-2 rounded mx-1">{gameData.activeTrade.want}</span>
+                                    <span className="text-green-800 uppercase text-xs block mb-1 tracking-widest">🔥 ПРОПОЗИЦІЯ ОБМІНУ</span>
+                                    {gameData.players.find(p=>p.uid===gameData.activeTrade.initiator)?.name} пропонує:<br/>
+                                    
+                                    <div className="flex flex-wrap justify-center gap-1 my-2">
+                                        {gameData.activeTrade.give.map((el,i) => (
+                                            <span key={i} className="flex items-center gap-1 px-2 py-1 rounded-full text-white text-[10px] font-bold uppercase shadow-sm" style={{background: `var(--main-${el})`}}>
+                                                {el}
+                                            </span>
+                                        ))}
+                                    </div>
+                                    за
+                                    <div className="flex flex-wrap justify-center gap-1 my-2">
+                                        {gameData.activeTrade.want.map((el,i) => (
+                                            <span key={i} className="flex items-center gap-1 px-2 py-1 rounded-full text-white text-[10px] font-bold uppercase shadow-sm" style={{background: `var(--main-${el})`}}>
+                                                {el}
+                                            </span>
+                                        ))}
+                                    </div>
                                 </div>
-                                <button onClick={acceptActiveTrade} className="bg-green-700 text-white px-6 py-2 rounded-full font-bold shadow-lg text-xs uppercase tracking-widest">
-                                    Прийняти
+                                <button onClick={acceptActiveTrade} className="w-full bg-green-700 hover:bg-green-600 text-white py-3 rounded-full font-bold shadow-lg text-xs uppercase tracking-widest transition-colors">
+                                    ПРИЙНЯТИ ПРОПОЗИЦІЮ
                                 </button>
                             </div>
                         </div>
                     )}
 
-                    {/* ІГРОВЕ ПОЛЕ */}
+                    {/* ЦЕНТРАЛЬНА ОБЛАСТЬ */}
                     <div className="flex-1 overflow-y-auto p-4 pb-60 scrollbar-hide relative">
+                        {/* Ринок карток */}
                         <div className="flex flex-wrap gap-4 justify-center pb-20">
                             {gameData.market.map(mol => (
                                 <MoleculeCard 
                                     key={mol.uniqueId} 
                                     mol={mol} 
-                                    canBuy={isMyTurn && turnPhase === 'action' && checkRecipe(myPlayer.hand, mol.req)}
+                                    canBuy={isMyTurn && turnPhase === 'action' && checkRecipe(myPlayer.hand, mol.req)} 
                                     onBuy={synthesizeMolecule}
                                 />
                             ))}
                             {gameData.market.length === 0 && (
-                                <div className="text-green-600 italic border border-green-800 px-8 py-4 rounded-xl">Ринок пустий</div>
+                                <div className="text-green-600 italic border border-green-800 px-8 py-4 rounded-xl">
+                                    Ринок порожній...
+                                </div>
                             )}
                         </div>
 
-                        {/* ЛОГИ */}
-                        <div className="fixed bottom-[240px] right-4 w-48 bg-[#06120a]/80 border border-green-800 rounded-lg p-2 max-h-32 overflow-y-auto shadow-lg backdrop-blur text-[10px]">
+                        {/* Логи гри (фіксовані збоку або знизу на мобільних) */}
+                        <div className="fixed bottom-[240px] right-4 w-64 bg-[#06120a]/80 border border-green-800 rounded-lg p-2 max-h-40 overflow-y-auto shadow-lg backdrop-blur text-[10px] hidden sm:block">
+                            <div className="text-green-500 font-bold uppercase mb-1 px-1">Хроніки лабораторії</div>
                             {gameData.logs.slice().reverse().map((log, i) => (
-                                <div key={i} className="mb-1 text-green-300 font-serif border-b border-green-900/50 pb-1 last:border-0">
+                                <div key={i} className="mb-1 text-green-300 font-serif border-b border-green-900/50 pb-1 pl-1">
                                     <span className="opacity-50 mr-2">{new Date(log.time).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span>
                                     {log.text}
                                 </div>
@@ -1040,39 +1116,42 @@
                         </div>
                     </div>
 
-                    {/* СПОВІЩЕННЯ */}
+                    {/* СПОВІЩЕННЯ (TOAST) */}
                     {notification && (
-                        <div className={`fixed bottom-1/2 left-1/2 -translate-x-1/2 px-6 py-3 rounded-xl shadow-2xl text-white font-bold z-[100] animate-in slide-in-from-bottom-4 flex items-center gap-3 text-sm whitespace-nowrap border-2 font-serif
+                        <div className={`
+                            fixed bottom-1/2 left-1/2 -translate-x-1/2 px-6 py-3 rounded-xl shadow-2xl text-white font-bold z-[100] 
+                            border-2 font-serif animate-in slide-in-from-bottom-4 flex items-center gap-3
                             ${notification.type === 'error' ? 'bg-red-900 border-red-500' : 'bg-green-800 border-green-500'}
                         `}>
+                            {notification.type === 'error' ? <X size={18}/> : <CheckCircle2 size={18}/>}
                             {notification.msg}
                         </div>
                     )}
 
-                    {/* НИЖНЯ ПАНЕЛЬ */}
+                    {/* НИЖНЯ ПАНЕЛЬ: Дії та Рука */}
                     <div className="absolute bottom-0 left-0 w-full z-40 flex flex-col justify-end pointer-events-none">
                         
-                        {/* КНОПКИ ДІЙ */}
+                        {/* Кнопки дій (плавають над рукою) */}
                         <div className="flex justify-center mb-4 px-4 gap-3 pointer-events-auto">
                             {isMyTurn && (
                                 <>
                                     {turnPhase === 'draw' && (
-                                        <button onClick={drawCards} className="bg-yellow-600 hover:bg-yellow-500 text-black px-6 py-3 rounded-full font-black shadow-[0_0_20px_rgba(234,179,8,0.4)] flex items-center gap-2 animate-bounce font-serif tracking-widest text-sm border-2 border-yellow-400">
-                                            ДОСЛІДИТИ (+2)
+                                        <button onClick={drawCards} className="bg-yellow-600 hover:bg-yellow-500 text-black px-6 py-3 rounded-full font-black shadow-[0_0_20px_rgba(234,179,8,0.4)] animate-bounce font-serif tracking-widest text-sm border-2 border-yellow-400 flex items-center gap-2">
+                                            <History size={16}/> ДОСЛІДИТИ (+2)
                                         </button>
                                     )}
                                     
                                     {turnPhase === 'action' && (
                                         <div className="flex gap-2 bg-[#06120a]/90 backdrop-blur p-2 rounded-full border border-green-600 shadow-xl">
                                             <button 
-                                                onClick={() => { setTradeModalOpen(true); setSelectedCards([]); setTradeOffer({ give: [], want: '' }); }} 
-                                                className="bg-purple-800 text-purple-100 px-4 py-2 rounded-full font-bold text-xs uppercase hover:bg-purple-700"
+                                                onClick={() => { setTradeModalOpen(true); setSelectedCards([]); setTradeWant([]); }} 
+                                                className="bg-purple-800 text-purple-100 px-5 py-2 rounded-full font-bold text-xs uppercase hover:bg-purple-700 flex items-center gap-2 transition-colors"
                                             >
-                                                ОБМІН
+                                                <RefreshCcw size={16}/> ОБМІН
                                             </button>
                                             <button 
                                                 onClick={endTurn} 
-                                                className="bg-green-800 text-green-100 px-4 py-2 rounded-full font-bold text-xs uppercase hover:bg-green-700 border border-green-600"
+                                                className="bg-green-800 text-green-100 px-5 py-2 rounded-full font-bold text-xs uppercase hover:bg-green-700 border border-green-600 transition-colors"
                                             >
                                                 ЗАВЕРШИТИ
                                             </button>
@@ -1080,38 +1159,58 @@
                                     )}
 
                                     {isDiscardPhase && (
-                                        <button onClick={discardCards} className="bg-red-700 text-white px-6 py-3 rounded-full font-bold shadow-lg animate-pulse hover:bg-red-600 text-xs uppercase tracking-widest border-2 border-red-500">
-                                            СКИНУТИ {cardsToDiscard - selectedCards.length}
+                                        <button onClick={discardCards} className="bg-red-700 text-white px-6 py-3 rounded-full font-bold animate-pulse text-xs uppercase border-2 border-red-500 flex items-center gap-2 shadow-lg">
+                                            <Trash2 size={16}/> СКИНУТИ {cardsToDiscard - selectedCards.length}
                                         </button>
                                     )}
                                 </>
                             )}
+                            
+                            {/* Якщо я ініціатор обміну - кнопка скасування */}
+                            {gameData.activeTrade && gameData.activeTrade.initiator === user.uid && (
+                                <button onClick={cancelActiveTrade} className="bg-gray-600 text-white px-6 py-3 rounded-full font-bold text-xs shadow-lg flex items-center gap-2 hover:bg-gray-500 transition-colors">
+                                    <X size={16}/> СКАСУВАТИ ОБМІН
+                                </button>
+                            )}
                         </div>
 
-                        {/* РУКА */}
-                        <div className="bg-[#1a3c28] w-full rounded-t-[2rem] shadow-[0_-10px_40px_rgba(0,0,0,0.6)] pt-3 pb-8 px-2 relative pointer-events-auto border-t-4 border-yellow-600">
-                            <div className="w-16 h-1 bg-green-700 rounded-full mx-auto mb-3"></div>
+                        {/* Панель з картами */}
+                        <div className="bg-[#1a3c28] w-full rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.6)] pt-3 pb-8 px-2 relative pointer-events-auto border-t-4 border-yellow-600 transition-transform hover:translate-y-0 translate-y-2">
+                            <div className="w-16 h-1.5 bg-green-700 rounded-full mx-auto mb-3"></div>
+                            <div className="text-center text-[10px] text-green-400 font-black uppercase tracking-widest mb-1">
+                                ВАШ ІНВЕНТАР ({myPlayer?.hand.length})
+                            </div>
                             
-                            <div className="overflow-x-auto overflow-y-visible flex justify-center px-4 py-4 min-h-[160px] scrollbar-hide pb-10">
+                            <div className="overflow-x-auto overflow-y-visible flex justify-center px-4 py-4 min-h-[170px] scrollbar-hide pb-10">
                                 <div className="flex -space-x-10 sm:-space-x-6 px-8 items-end">
+                                    {/* Сортування та відображення карт */}
                                     {myPlayer?.hand
                                         .map((card, idx) => ({ card, idx }))
                                         .sort((a, b) => a.card.localeCompare(b.card))
                                         .map(({ card, idx }, i, arr) => {
                                             const isSelected = selectedCards.includes(idx);
+                                            // Розрахунок віяла
                                             const rotation = (i - (arr.length - 1) / 2) * 4; 
                                             const translateY = Math.abs(i - (arr.length - 1) / 2) * 3;
-                                            
+
                                             return (
-                                                <div key={idx} className="relative transition-all duration-300 origin-bottom" 
-                                                     style={{ 
-                                                         zIndex: isSelected ? 50 : i,
-                                                         transform: `rotate(${rotation}deg) translateY(${translateY}px)` 
-                                                     }}>
+                                                <div 
+                                                    key={idx} 
+                                                    className="relative transition-all duration-300 origin-bottom" 
+                                                    style={{ 
+                                                        zIndex: isSelected ? 50 : i, 
+                                                        transform: `rotate(${rotation}deg) translateY(${translateY}px)` 
+                                                    }}
+                                                >
                                                     <ElementCard 
                                                         type={card} 
-                                                        selected={isSelected}
-                                                        onClick={() => handleCardClick(idx)}
+                                                        selected={isSelected} 
+                                                        onClick={() => {
+                                                            // Дозволяємо виділення тільки у фазах дії або скидання
+                                                            if(isMyTurn && (turnPhase==='discard_force'||turnPhase==='action')) {
+                                                                setSelectedCards(p => p.includes(idx) ? p.filter(x => x!==idx) : [...p, idx]);
+                                                            }
+                                                        }}
                                                     />
                                                 </div>
                                             );
@@ -1122,44 +1221,93 @@
                         </div>
                     </div>
 
-                    {/* МОДАЛКА ТОРГІВЛІ */}
+                    {/* МОДАЛЬНЕ ВІКНО ТОРГІВЛІ (Advanced) */}
                     <Modal isOpen={isTradeModalOpen} onClose={() => setTradeModalOpen(false)} title="Торгова Гільдія">
+                        {/* Перемикач режимів */}
                         <div className="flex mb-4 bg-green-100 p-1 rounded-xl">
-                            <button onClick={() => setTradeTab('bank')} className={`flex-1 py-2 rounded-lg font-bold text-xs uppercase ${tradeTab==='bank' ? 'bg-yellow-600 text-white shadow' : 'text-green-800'}`}>Банк (3:1)</button>
-                            <button onClick={() => setTradeTab('player')} className={`flex-1 py-2 rounded-lg font-bold text-xs uppercase ${tradeTab==='player' ? 'bg-purple-700 text-white shadow' : 'text-green-800'}`}>Гравці</button>
+                            <button 
+                                onClick={() => {setTradeTab('bank'); setTradeWant([]);}} 
+                                className={`flex-1 py-3 rounded-lg font-bold text-xs uppercase transition-all flex flex-col items-center ${tradeTab==='bank' ? 'bg-yellow-600 text-white shadow' : 'text-green-800 hover:bg-green-200'}`}
+                            >
+                                <span className="text-sm">Банк</span>
+                                <span className="opacity-70 text-[10px]">Курс 3:1</span>
+                            </button>
+                            <button 
+                                onClick={() => {setTradeTab('player'); setTradeWant([]);}} 
+                                className={`flex-1 py-3 rounded-lg font-bold text-xs uppercase transition-all flex flex-col items-center ${tradeTab==='player' ? 'bg-purple-700 text-white shadow' : 'text-green-800 hover:bg-green-200'}`}
+                            >
+                                <span className="text-sm">Гравці</span>
+                                <span className="opacity-70 text-[10px]">Вільний курс</span>
+                            </button>
                         </div>
 
+                        {/* КРОК 1: Що віддаємо */}
                         <div className="mb-4">
-                            <h4 className="text-[10px] font-bold text-green-800 uppercase mb-2">1. Віддаєте (з руки):</h4>
-                            <div className="flex gap-2 min-h-[50px] p-2 bg-white border border-green-300 rounded-lg overflow-x-auto items-center">
-                                {selectedCards.length > 0 ? (
-                                    selectedCards.map(idx => (
-                                        <div key={idx} className="text-xs font-bold px-2 py-1 bg-gray-200 rounded">{myPlayer.hand[idx]}</div>
-                                    ))
-                                ) : <span className="text-xs text-gray-400 italic">Оберіть карти...</span>}
+                            <h4 className="text-[10px] font-bold text-green-800 uppercase mb-2 flex justify-between">
+                                <span>1. Ви віддаєте (Оберіть карти в руці):</span>
+                                <span className="text-green-600">{selectedCards.length} шт.</span>
+                            </h4>
+                            <div className="flex gap-2 min-h-[60px] p-2 bg-white border border-green-300 rounded-lg overflow-x-auto items-center">
+                                {selectedCards.length > 0 ? selectedCards.map(idx => (
+                                    <div key={idx} className="flex flex-col items-center justify-center w-10 h-12 rounded shadow-sm shrink-0" style={{background: `var(--bg-${myPlayer.hand[idx]})`, color: `var(--main-${myPlayer.hand[idx]})`}}>
+                                        <span className="font-serif font-bold text-sm">{myPlayer.hand[idx]}</span>
+                                    </div>
+                                )) : <span className="text-xs text-gray-400 italic mx-auto">Натисніть на свої карти знизу екрана...</span>}
                             </div>
                         </div>
 
+                        <div className="flex justify-center my-2 text-gray-300"><ArrowRightLeft size={20}/></div>
+
+                        {/* КРОК 2: Що отримуємо */}
                         <div className="mb-6">
-                            <h4 className="text-[10px] font-bold text-green-800 uppercase mb-2">2. Отримуєте:</h4>
-                            <div className="grid grid-cols-5 gap-1">
+                            <h4 className="text-[10px] font-bold text-green-800 uppercase mb-2 flex justify-between">
+                                <span>2. Ви отримуєте:</span>
+                                <span className="text-green-600">{tradeWant.length} шт.</span>
+                            </h4>
+                            
+                            {/* Список обраних для отримання */}
+                            {tradeWant.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mb-3 p-2 bg-gray-50 border border-gray-200 rounded-lg min-h-[40px]">
+                                    {tradeWant.map((el, i) => (
+                                        <div 
+                                            key={i} 
+                                            onClick={() => removeFromTradeWant(i)}
+                                            className="cursor-pointer flex items-center gap-1 px-2 py-1 rounded shadow-sm hover:opacity-80 shrink-0" 
+                                            style={{background: `var(--main-${el})`, color: 'white'}}
+                                        >
+                                            <span className="text-xs font-bold">{el}</span>
+                                            <X size={10}/>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Палітра вибору */}
+                            <div className="grid grid-cols-5 gap-2">
                                 {Object.keys(ELEMENTS).map(el => (
                                     <button 
                                         key={el} 
-                                        onClick={() => setTradeOffer(prev => ({ ...prev, want: el }))}
-                                        className={`p-1 rounded border text-xs font-bold ${tradeOffer.want === el ? 'bg-green-700 text-white' : 'bg-white text-green-900'}`}
+                                        onClick={() => {
+                                            if (tradeTab === 'bank') setTradeWant([el]); // Для банку тільки 1 карта
+                                            else addToTradeWant(el); // Для гравців можна багато
+                                        }} 
+                                        className="p-1 rounded-lg border text-[10px] font-bold bg-white text-green-900 hover:bg-green-100 flex flex-col items-center transition-colors h-10 justify-center shadow-sm"
                                     >
-                                        {el}
+                                        <span className="text-xs">{el}</span>
                                     </button>
                                 ))}
                             </div>
                         </div>
 
+                        {/* Кнопка підтвердження */}
                         <button 
-                            onClick={tradeTab === 'bank' ? executeBankTrade : createPlayerTrade}
-                            className="w-full py-3 bg-green-800 text-white rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg"
+                            onClick={tradeTab === 'bank' ? executeBankTrade : createPlayerTrade} 
+                            className={`
+                                w-full py-4 rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg transition-transform active:scale-95 text-white
+                                ${tradeTab === 'bank' ? 'bg-yellow-600 hover:bg-yellow-500' : 'bg-purple-700 hover:bg-purple-600'}
+                            `}
                         >
-                            Підтвердити
+                            {tradeTab === 'bank' ? 'ОБМІНЯТИ З БАНКОМ (3:1)' : 'НАДІСЛАТИ ПРОПОЗИЦІЮ ВСІМ'}
                         </button>
                     </Modal>
 
