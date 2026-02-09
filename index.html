@@ -246,7 +246,7 @@
 </head>
 <body>
     <div id="error-overlay">
-        <h2 class="text-xl font-bold mb-2">⚠️ Критична помилка:</h2>
+        <h2 class="text-xl font-bold mb-2">Критична помилка:</h2>
         <pre id="error-msg" class="whitespace-pre-wrap font-mono text-xs"></pre>
         <button onclick="window.location.reload()" class="mt-4 bg-green-700 text-white px-4 py-2 rounded">Перезавантажити гру</button>
     </div>
@@ -694,7 +694,7 @@
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', gameId), {
                     players: players,
                     turnPhase: 'action',
-                    logs: arrayUnion({ text: `${myPlayer.name} очистив інвентар (${cardsToDiscard} карт)`, time: Date.now() })
+                    logs: arrayUnion({ text: `${myPlayer.name} скинув (${cardsToDiscard} карт)`, time: Date.now() })
                 });
                 setSelectedCards([]);
             };
@@ -754,7 +754,7 @@
             const selectTradeTarget = (uid) => setTradeTargetPlayer(uid === tradeTargetPlayer ? null : uid);
 
             const executeBankTrade = async () => {
-                if (selectedCards.length !== 3) return showNotification('error', "Оберіть 3 карти у себе в руці!");
+                if (selectedCards.length !== 3) return showNotification('error', "Оберіть 3 карти у себе знизу!");
                 const first = myPlayer.hand[selectedCards[0]];
                 if (!selectedCards.every(i => myPlayer.hand[i] === first)) return showNotification('error', "Для банку карти мають бути однакові!");
                 if (tradeWant.length !== 1) return showNotification('error', "Оберіть 1 карту для отримання!");
@@ -777,7 +777,7 @@
             const createPlayerTrade = async () => {
                 if (selectedCards.length === 0) return showNotification('error', "Спочатку оберіть карти в руці, які ви віддаєте!");
                 if (tradeWant.length === 0) return showNotification('error', "Оберіть карти, які ви хочете!");
-                if (!tradeTargetPlayer) return showNotification('error', "Оберіть партнера для обміну!");
+                if (!tradeTargetPlayer) return showNotification('error', "Оберіть гравця для обміну!");
                 
                 const giveCards = selectedCards.map(i => myPlayer.hand[i]);
                 const targetName = gameData.players.find(p => p.uid === tradeTargetPlayer)?.name || "Невідомий";
@@ -921,7 +921,7 @@
                             </div>
 
                             <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 to-yellow-600 mt-10 mb-2 font-serif uppercase tracking-widest">
-                                ГРУ ЗАВЕРШЕНО
+                                КІНЕЦЬ ГРИ
                             </h1>
                             <p className="text-green-300 font-serif mb-8 text-lg">Вітаємо переможця!</p>
 
@@ -991,7 +991,7 @@
                                 </button>
                             ) : (
                                 <div className="flex items-center justify-center gap-3 text-green-400 font-bold animate-pulse p-4">
-                                    <Loader2 className="animate-spin"/> Очікування хоста...
+                                    <Loader2 className="animate-spin"/> Очікування початку синтезу...
                                 </div>
                             )}
                         </div>
@@ -1038,7 +1038,7 @@
                         <div className="absolute top-20 left-4 right-4 z-[60] animate-in slide-in-from-top duration-500 pointer-events-auto">
                             <div className="bg-[#f0fdf4] border-l-8 border-green-600 rounded-lg p-4 shadow-2xl flex flex-col gap-3 text-black max-w-lg mx-auto">
                                 <div className="font-bold text-center text-sm font-serif">
-                                    <span className="text-green-800 uppercase text-xs block mb-1 tracking-widest">🔥 ВХІДНА ПРОПОЗИЦІЯ</span>
+                                    <span className="text-green-800 uppercase text-xs block mb-1 tracking-widest">ВХІДНА ПРОПОЗИЦІЯ</span>
                                     {gameData.players.find(p=>p.uid===gameData.activeTrade.initiator)?.name} пропонує:<br/>
                                     
                                     <div className="flex flex-wrap justify-center gap-1 my-2">
@@ -1129,7 +1129,7 @@
                                 <>
                                     {turnPhase === 'draw' && (
                                         <button onClick={drawCards} className="bg-yellow-600 hover:bg-yellow-500 text-black px-6 py-3 rounded-full font-black shadow-[0_0_20px_rgba(234,179,8,0.4)] animate-bounce font-serif tracking-widest text-sm border-2 border-yellow-400 flex items-center gap-2">
-                                            <History size={16}/> ДОСЛІДИТИ (+2)
+                                            <History size={16}/> ВЗЯТИ КАРТИ (+2)
                                         </button>
                                     )}
                                     
@@ -1170,7 +1170,7 @@
                         <div className="bg-[#1a3c28] w-full rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.6)] pt-3 pb-8 px-2 relative pointer-events-auto border-t-4 border-yellow-600 transition-transform hover:translate-y-0 translate-y-2">
                             <div className="w-16 h-1.5 bg-green-700 rounded-full mx-auto mb-3"></div>
                             <div className="text-center text-[10px] text-green-400 font-black uppercase tracking-widest mb-1">
-                                ВАШ ІНВЕНТАР ({myPlayer?.hand.length})
+                                ВАШІ КАРТИ ({myPlayer?.hand.length})
                             </div>
                             
                             <div className="overflow-x-auto overflow-y-visible flex justify-center px-4 py-4 min-h-[170px] scrollbar-hide pb-10">
@@ -1211,21 +1211,21 @@
                     </div>
 
                     {/* TRADE MODAL */}
-                    <Modal isOpen={isTradeModalOpen} onClose={() => setTradeModalOpen(false)} title="Торгова Гільдія">
+                    <Modal isOpen={isTradeModalOpen} onClose={() => setTradeModalOpen(false)} title="Торгова Палата">
                         <div className="flex mb-4 bg-green-100 p-1 rounded-xl">
                             <button 
                                 onClick={() => {setTradeTab('bank'); setTradeWant([]); setTradeTargetPlayer(null);}} 
                                 className={`flex-1 py-3 rounded-lg font-bold text-xs uppercase transition-all flex flex-col items-center ${tradeTab==='bank' ? 'bg-yellow-600 text-white shadow' : 'text-green-800 hover:bg-green-200'}`}
                             >
                                 <span className="text-sm">Банк</span>
-                                <span className="opacity-70 text-[10px]">Курс 3:1</span>
+                                <span className="opacity-70 text-[10px]">курс 3:1</span>
                             </button>
                             <button 
                                 onClick={() => {setTradeTab('player'); setTradeWant([]);}} 
                                 className={`flex-1 py-3 rounded-lg font-bold text-xs uppercase transition-all flex flex-col items-center ${tradeTab==='player' ? 'bg-purple-700 text-white shadow' : 'text-green-800 hover:bg-green-200'}`}
                             >
-                                <span className="text-sm">Приватний обмін</span>
-                                <span className="opacity-70 text-[10px]">Вільний курс</span>
+                                <span className="text-sm">Обмін з гравцями</span>
+                                <span className="opacity-70 text-[10px]">вільний курс</span>
                             </button>
                         </div>
 
@@ -1240,7 +1240,7 @@
                                     <div key={idx} className="flex flex-col items-center justify-center w-10 h-12 rounded shadow-sm shrink-0" style={{background: `var(--bg-${myPlayer.hand[idx]})`, color: `var(--main-${myPlayer.hand[idx]})`}}>
                                         <span className="font-serif font-bold text-sm">{myPlayer.hand[idx]}</span>
                                     </div>
-                                )) : <span className="text-xs text-gray-400 italic mx-auto">Оберіть карти в руці (знизу)</span>}
+                                )) : <span className="text-xs text-gray-400 italic mx-auto">Оберіть карти знизу</span>}
                             </div>
                         </div>
 
@@ -1249,7 +1249,7 @@
                         {/* STEP 2: SELECT PARTNER (ONLY FOR PLAYER TRADE) */}
                         {tradeTab === 'player' && (
                             <div className="mb-4">
-                                <h4 className="text-[10px] font-bold text-green-800 uppercase mb-2">2. Оберіть партнера:</h4>
+                                <h4 className="text-[10px] font-bold text-green-800 uppercase mb-2">2. Оберіть гравця:</h4>
                                 <div className="flex flex-wrap gap-2">
                                     {gameData.players.filter(p => p.uid !== user.uid).map(p => (
                                         <button 
